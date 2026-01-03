@@ -5,11 +5,11 @@ import HomeClient from '@/components/home/HomeClient';
 // ✅ SEO METADATA FUNCTION - Runs on server at build/request time
 export async function generateMetadata(): Promise<Metadata> {
   const storeName = process.env.NEXT_PUBLIC_SITE_NAME;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ;
-  const twitterHandle = process.env.NEXT_PUBLIC_TWITTER_HANDLE ;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const twitterHandle = process.env.NEXT_PUBLIC_TWITTER_HANDLE;
   
   return {
-    title: `Soap | 100% Natural Skincare | ${storeName}`,
+    title: `Premium Organic Soaps & Natural Skincare | ${storeName} | 100% Natural`,
     description: `Shop premium 100% organic soaps & skincare at ${storeName}. Handmade with natural ingredients, cruelty-free, and environmentally friendly. Free shipping available.`,
     keywords: ['organic soap', 'natural soap', 'handmade soap', 'skincare', 'glow soaps',],
     robots: {
@@ -53,7 +53,6 @@ export async function generateMetadata(): Promise<Metadata> {
     verification: {
       google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
     },
-    // Additional metadata
     authors: [{ name: storeName }],
     publisher: storeName,
     formatDetection: {
@@ -61,7 +60,6 @@ export async function generateMetadata(): Promise<Metadata> {
       address: false,
       telephone: false,
     },
-    // Viewport is automatically added by Next.js
   };
 }
 
@@ -96,23 +94,19 @@ function generateStructuredData() {
 
 // ✅ SERVER COMPONENT - Home Page
 export default async function HomePage() {
-  // Fetch data on the server
   const categories = await fetchActiveCategories();
   const featuredCategories = categories.slice(0, 3);
   
-  // Get store info from environment
-  const storeName = process.env.NEXT_PUBLIC_SITE_NAME ;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ;
+  const storeName = process.env.NEXT_PUBLIC_SITE_NAME;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
   return (
     <>
-      {/* Structured Data for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: generateStructuredData() }}
       />
 
-      {/* Additional Organization Schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -141,9 +135,8 @@ export default async function HomePage() {
         }}
       />
 
-      {/* Hidden semantic content for better indexing */}
       <div className="sr-only" aria-hidden="true">
-        <h1>{storeName} - Soap</h1>
+        <h2>{storeName} - Soap</h2>
         <p>Shop 100% natural, handmade organic soaps and skincare products. Best quality skincare with free shipping across India.</p>
         <ul>
           {categories.map(category => (
@@ -152,7 +145,6 @@ export default async function HomePage() {
         </ul>
       </div>
 
-      {/* Pass data to client component */}
       <HomeClient 
         categories={categories}
         featuredCategories={featuredCategories}
