@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: 'soap',
   description: 'Your one-stop shop for eco-friendly products',
   icons: {
-    icon: "/images/logoo.png", // Path to your PNG favicon  src="/images/logoo.png" 
+    icon: "images/logot.png",
   },
 }
 

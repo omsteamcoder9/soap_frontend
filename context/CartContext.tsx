@@ -1,7 +1,7 @@
 // CartContext.tsx - Fix the isGuest logic
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'; // <-- CHANGED: Added useCallback import
 import { Product } from '@/types/product';
 import { Cart, CartItem } from '@/types/cart';
 import * as cartAPI from '@/lib/cart';
@@ -95,7 +95,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   };
 
-  const refreshCart = async () => {
+  // CHANGED: Wrapped refreshCart in useCallback
+  const refreshCart = useCallback(async () => {
     console.log('🔄 refreshCart called, isGuest:', isGuest, 'authLoading:', authLoading);
     
     if (authLoading) {
@@ -122,13 +123,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         loadGuestCart();
       }
     }
-  };
+  }, [isGuest, authLoading, user]); // <-- CHANGED: Added dependencies for useCallback
 
   // Refresh cart when auth state changes
   useEffect(() => {
     console.log('🔄 Auth state changed, refreshing cart');
     refreshCart();
-  }, [user, authLoading]);
+  }, [user, authLoading, refreshCart]); // <-- CHANGED: Added refreshCart as dependency
 
   // ✅ FIXED: Guest cart functions
   const handleGuestAddToCart = (product: Product, quantity: number): Cart => {

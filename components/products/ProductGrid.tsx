@@ -1,7 +1,6 @@
-// components/products/ProductGrid.tsx
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Product } from '@/types/product';
 import { Category } from '@/types/category';
 import { getAllProducts } from '@/lib/productService';
@@ -14,7 +13,24 @@ interface ProductGridProps {
   category?: string;
   search?: string;
   limit?: number;
-  hideFilters?: boolean; // New prop to hide filters
+  hideFilters?: boolean;
+}
+
+// Define the filter state interface
+interface FilterState {
+  category: string;
+  priceRange: string;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+  search: string;
+}
+
+// Define the query parameters interface
+interface QueryParams {
+  category?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 export default function ProductGrid({ category, search, limit, hideFilters = false }: ProductGridProps) {
@@ -27,12 +43,12 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
   const filterBarRef = useRef<HTMLDivElement>(null);
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
   
-  // Filter state - removed sizes and featured
-  const [filters, setFilters] = useState({
+  // Filter state with proper typing
+  const [filters, setFilters] = useState<FilterState>({
     category: category || '',
     priceRange: '',
     sortBy: 'createdAt',
-    sortOrder: 'desc' as 'asc' | 'desc',
+    sortOrder: 'desc',
     search: search || ''
   });
 
@@ -65,56 +81,8 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [hideFilters]);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        
-        // Load categories
-        const categoriesData = await fetchActiveCategories();
-        setCategories(categoriesData);
-
-        // Load products based on filters
-        await loadFilteredProducts();
-      } catch (err) {
-        setError('Failed to load products');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
-  }, []);
-
-  // Update filters when category prop changes
-  useEffect(() => {
-    console.log('🔄 Category prop changed:', category);
-    setFilters(prev => ({
-      ...prev,
-      category: category || ''  // Ensure empty string for "All Products"
-    }));
-  }, [category]);
-
-  // Update filters when search prop changes
-  useEffect(() => {
-    if (search !== undefined) {
-      setFilters(prev => ({
-        ...prev,
-        search: search || ''
-      }));
-    }
-  }, [search]);
-
-  // Reload products when filters change
-  useEffect(() => {
-    console.log('🔄 Filters changed, reloading products:', filters);
-    if (categories.length > 0) {
-      loadFilteredProducts();
-    }
-  }, [filters, categories.length]);
-
-  const loadFilteredProducts = async () => {
+  // Wrap loadFilteredProducts in useCallback to memoize it
+  const loadFilteredProducts = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -125,10 +93,10 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
       
       const hasPriceFilter = filters.priceRange;
       
-      // Use basic product fetching for ALL products
-      const queryParams: any = {};
+      // Use properly typed query parameters
+      const queryParams: QueryParams = {};
       
-      // Only add category to query if it's not empty (meaning "All Products")
+      // Only add category to query if it's not empty
       if (filters.category) {
         queryParams.category = filters.category;
         console.log('🎯 Filtering by category:', filters.category);
@@ -172,7 +140,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
         productsData = filtered;
       }
 
-      // APPLY LIMIT - This is the key line that limits products
+      // APPLY LIMIT
       if (limit && productsData) {
         console.log(`🎯 Applying limit: ${limit} products`);
         productsData = productsData.slice(0, limit);
@@ -186,7 +154,56 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, limit]); // Add dependencies for useCallback
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        
+        // Load categories
+        const categoriesData = await fetchActiveCategories();
+        setCategories(categoriesData);
+
+        // Load products based on filters
+        await loadFilteredProducts();
+      } catch (err) {
+        setError('Failed to load products');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, [loadFilteredProducts]); // Add loadFilteredProducts as dependency
+
+  // Update filters when category prop changes
+  useEffect(() => {
+    console.log('🔄 Category prop changed:', category);
+    setFilters(prev => ({
+      ...prev,
+      category: category || ''
+    }));
+  }, [category]);
+
+  // Update filters when search prop changes
+  useEffect(() => {
+    if (search !== undefined) {
+      setFilters(prev => ({
+        ...prev,
+        search: search || ''
+      }));
+    }
+  }, [search]);
+
+  // Reload products when filters change
+  useEffect(() => {
+    console.log('🔄 Filters changed, reloading products:', filters);
+    if (categories.length > 0) {
+      loadFilteredProducts();
+    }
+  }, [filters, categories.length, loadFilteredProducts]); // Add loadFilteredProducts as dependency
 
   const handleSortChange = (sortBy: string, sortOrder: 'asc' | 'desc') => {
     setFilters(prev => ({
@@ -196,7 +213,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
     }));
   };
 
-  const handleFiltersChange = (newFilters: any) => {
+  const handleFiltersChange = (newFilters: FilterState) => {
     setFilters(newFilters);
   };
 
@@ -220,7 +237,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
   if (loading && products.length === 0) {
     return (
       <div className="flex justify-center items-center py-8 sm:py-12 font-sans">
-        <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-amber-700"></div>
+        <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-gray-700"></div>
       </div>
     );
   }
@@ -231,7 +248,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
         <p className="text-red-600 text-base sm:text-lg">{error}</p>
         <button 
           onClick={() => window.location.reload()}
-          className="mt-3 sm:mt-4 bg-amber-700 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-amber-800 transition-colors text-sm sm:text-base font-medium"
+          className="mt-3 sm:mt-4 bg-gray-700 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base font-medium"
         >
           Try Again
         </button>
@@ -251,7 +268,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
             <div className="lg:hidden mb-4 flex gap-2">
               <button
                 onClick={() => setIsMobileFiltersOpen(true)}
-                className="flex-1 py-2 sm:py-3 bg-gradient-to-r from-amber-700 to-amber-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-amber-500/25 transition-all duration-200 text-sm sm:text-base"
+                className="flex-1 py-2 sm:py-3 bg-gray-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-gray-500/25 transition-all duration-200 text-sm sm:text-base hover:bg-gray-800"
               >
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
@@ -280,7 +297,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
                   <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
                   <button
                     onClick={() => setIsMobileFiltersOpen(false)}
-                    className="p-2 hover:bg-amber-50 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -304,7 +321,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
                             name="mobile-category"
                             checked={filters.category === option.value}
                             onChange={() => handleFiltersChange({ ...filters, category: option.value })}
-                            className="text-amber-600 focus:ring-amber-600"
+                            className="text-gray-700 focus:ring-gray-700"
                           />
                           <span className="ml-2 text-gray-700">{option.label}</span>
                         </label>
@@ -331,7 +348,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
                             name="mobile-price"
                             checked={filters.priceRange === option.value}
                             onChange={() => handleFiltersChange({ ...filters, priceRange: option.value })}
-                            className="text-amber-600 focus:ring-amber-600"
+                            className="text-gray-700 focus:ring-gray-700"
                           />
                           <span className="ml-2 text-gray-700">{option.label}</span>
                         </label>
@@ -352,7 +369,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
                     </button>
                     <button
                       onClick={() => setIsMobileFiltersOpen(false)}
-                      className="flex-1 py-2 bg-gradient-to-r from-amber-700 to-amber-800 text-white rounded-lg hover:from-amber-800 hover:to-amber-900 transition-all duration-200 font-medium shadow-lg hover:shadow-amber-500/25"
+                      className="flex-1 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium shadow-lg hover:shadow-gray-500/25"
                     >
                       Apply
                     </button>
@@ -402,31 +419,32 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
                     
                     <div className="flex flex-wrap gap-2">
                       {/* Category Filter */}
-                      <FilterDropdown
-                        title="Category"
-                        value={filters.category}
-                        options={[
-                          { value: '', label: 'All Categories' },
-                          ...categories.map(cat => ({ value: cat._id, label: cat.name }))
-                        ]}
-                        onSelect={(value) => handleFiltersChange({ ...filters, category: value })}
-                      />
+  {/* Category Filter */}
+<FilterDropdown
+  title="Category"
+  value={filters.category}
+  options={[
+    { value: '', label: 'All Categories' },
+    ...categories.map(cat => ({ value: cat._id, label: cat.name }))
+  ]}
+  onSelect={(value) => handleFiltersChange({ ...filters, category: value as string })}
+/>
 
-                      {/* Price Range Filter */}
-                      <FilterDropdown
-                        title="Price"
-                        value={filters.priceRange}
-                        options={[
-                          { value: '', label: 'All Prices' },
-                          { value: '100-200', label: '₹100-200' },
-                          { value: '200-300', label: '₹200-300' },
-                          { value: '300-400', label: '₹300-400' },
-                          { value: '400-500', label: '₹400-500' },
-                          { value: '500-600', label: '₹500-600' },
-                          { value: 'above-600', label: 'Above ₹600' }
-                        ]}
-                        onSelect={(value) => handleFiltersChange({ ...filters, priceRange: value })}
-                      />
+{/* Price Range Filter */}
+<FilterDropdown
+  title="Price"
+  value={filters.priceRange}
+  options={[
+    { value: '', label: 'All Prices' },
+    { value: '100-200', label: '₹100-200' },
+    { value: '200-300', label: '₹200-300' },
+    { value: '300-400', label: '₹300-400' },
+    { value: '400-500', label: '₹400-500' },
+    { value: '500-600', label: '₹500-600' },
+    { value: 'above-600', label: 'Above ₹600' }
+  ]}
+  onSelect={(value) => handleFiltersChange({ ...filters, priceRange: value as string })}
+/>
 
                       {/* Clear Filters Button - Hidden when sticky on desktop */}
                       {!isSticky && activeFilterCount > 0 && (
@@ -467,7 +485,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
                     {/* Search Filter Display */}
                     {filters.search && (
                       <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium">
-                        Search: "{filters.search}"
+                        Search:&quot;{filters.search}
                         <button 
                           onClick={() => handleFiltersChange({ ...filters, search: '' })}
                           className="hover:text-yellow-900 text-xs font-bold"
@@ -478,11 +496,11 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
                     )}
                     
                     {filters.category && (
-                      <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium">
+                      <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full whitespace-nowrap font-medium">
                         Cat: {categories.find(c => c._id === filters.category)?.name}
                         <button 
                           onClick={() => handleFiltersChange({ ...filters, category: '' })}
-                          className="hover:text-amber-900 text-xs font-bold"
+                          className="hover:text-gray-900 text-xs font-bold"
                         >
                           ×
                         </button>
@@ -522,7 +540,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
               </p>
               <button 
                 onClick={clearAllFilters}
-                className="bg-gradient-to-r from-amber-700 to-amber-800 text-white px-6 py-2 rounded-lg font-medium hover:from-amber-800 hover:to-amber-900 transition-all duration-200 text-sm shadow-lg hover:shadow-amber-500/25"
+                className="bg-gray-700 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-all duration-200 text-sm shadow-lg hover:shadow-gray-500/25"
               >
                 Clear All Filters
               </button>

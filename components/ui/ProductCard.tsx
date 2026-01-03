@@ -1,13 +1,23 @@
 import { Product } from '@/types/product';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
-import { Star, ShoppingBag, Eye, Check, X } from 'lucide-react';
-import { getProductImageUrl } from '@/lib/productService'; 
+import {  ShoppingBag, Eye,  X } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 
 interface ProductCardProps {
   product: Product;
+}
+
+interface QuantityPopupProps {
+  product: Product;
+  popupQuantity: number;
+  maxQuantity: number;
+  isAddingThisProduct: boolean;
+  onClose: () => void;
+  onQuantityChange: (quantity: number) => void;
+  onAddToCart: () => Promise<void>;
 }
 
 // ✅ Format price with commas for thousands
@@ -15,19 +25,136 @@ const formatPrice = (price: number): string => {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+// Quantity Popup Component - Defined outside of ProductCard
+const QuantityPopup = ({ 
+  product, 
+  popupQuantity, 
+  maxQuantity, 
+  isAddingThisProduct, 
+  onClose, 
+  onQuantityChange, 
+  onAddToCart 
+}: QuantityPopupProps) => {
+  const imageUrl = product.images?.[0]?.image 
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${product.images[0].image}`
+    : '/placeholder-image.jpg';
+
+  return (
+    <div className="fixed inset-0 z-[9999]">
+      <div 
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      ></div>
+      
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div 
+          className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto transform transition-transform duration-300 scale-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">Select Quantity</h3>
+            <button 
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors transform hover:scale-110"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Product Info */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex gap-4">
+              <div className="relative w-20 h-20">
+                <Image
+                  src={imageUrl}
+                  alt={product.name}
+                  fill
+                  sizes="80px"
+                  className="object-contain rounded-lg bg-gray-100 transform transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">{product.name}</h4>
+                <p className="text-lg font-bold text-gray-900">₹{formatPrice(product.price)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quantity Selection */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold">Quantity:</span>
+              <div className="flex items-center border border-gray-300 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => onQuantityChange(Math.max(1, popupQuantity - 1))}
+                  className="px-4 py-2 hover:bg-gray-50 transition-colors disabled:opacity-50 transform hover:scale-110"
+                  disabled={popupQuantity <= 1}
+                >
+                  -
+                </button>
+                <span className="px-4 py-2 min-w-12 text-center">{popupQuantity}</span>
+                <button
+                  type="button"
+                  onClick={() => onQuantityChange(Math.min(maxQuantity, popupQuantity + 1))}
+                  className="px-4 py-2 hover:bg-gray-50 transition-colors disabled:opacity-50 transform hover:scale-110"
+                  disabled={popupQuantity >= maxQuantity}
+                >
+                  +
+                </button>
+              </div>
+              {maxQuantity > 0 && (
+                <span className="text-sm text-gray-600">
+                  Max: {maxQuantity}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="p-6 flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 py-3 px-4 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors transform hover:scale-105"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onAddToCart}
+              disabled={isAddingThisProduct}
+              className="flex-1 py-3 px-4 bg-gray-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-all hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-105"
+            >
+              {isAddingThisProduct ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <ShoppingBag size={16} />
+                  Add to Cart
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ProductCard({ product }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [popupQuantity, setPopupQuantity] = useState(1);
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(false);
   const [showQuantityPopup, setShowQuantityPopup] = useState(false);
   
   const { addToCart, loading, addingProductId, cart } = useCart();
   const router = useRouter();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+
 
   const handleCardClick = () => {
     router.push(`/products/${product.slug}`);
@@ -72,6 +199,15 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
 
+  const handlePopupClose = () => {
+    setShowQuantityPopup(false);
+    setPopupQuantity(1);
+  };
+
+  const handleQuantityChange = (quantity: number) => {
+    setPopupQuantity(quantity);
+  };
+
   const getMaxQuantity = () => {
     return Math.max(0, product.stock);
   };
@@ -84,115 +220,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   const maxQuantity = getMaxQuantity();
   const isOutOfStock = product.stock <= 0;
 
-  // Quantity Popup Component
-  const QuantityPopup = () => (
-    <div className="fixed inset-0 z-[9999]">
-      <div 
-        className="absolute inset-0 bg-black/50"
-        onClick={() => {
-          setShowQuantityPopup(false);
-          setPopupQuantity(1);
-        }}
-      ></div>
-      
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div 
-          className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto transform transition-transform duration-300 scale-100"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Select Quantity</h3>
-            <button 
-              onClick={() => {
-                setShowQuantityPopup(false);
-                setPopupQuantity(1);
-              }}
-              className="text-gray-400 hover:text-gray-600 transition-colors transform hover:scale-110"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          {/* Product Info */}
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex gap-4">
-              <img 
-                src={`${process.env.NEXT_PUBLIC_BASE_URL}${product.images[0].image}`}
-                alt={product.name}
-                className="w-20 h-20 object-contain rounded-lg bg-gray-100 transform transition-transform duration-300 hover:scale-105"
-              />
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-1">{product.name}</h4>
-                <p className="text-lg font-bold text-gray-900">₹{formatPrice(product.price)}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Quantity Selection */}
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">Quantity:</span>
-              <div className="flex items-center border border-gray-300 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setPopupQuantity(Math.max(1, popupQuantity - 1))}
-                  className="px-4 py-2 hover:bg-gray-50 transition-colors disabled:opacity-50 transform hover:scale-110"
-                  disabled={popupQuantity <= 1}
-                >
-                  -
-                </button>
-                <span className="px-4 py-2 min-w-12 text-center">{popupQuantity}</span>
-                <button
-                  type="button"
-                  onClick={() => setPopupQuantity(Math.min(maxQuantity, popupQuantity + 1))}
-                  className="px-4 py-2 hover:bg-gray-50 transition-colors disabled:opacity-50 transform hover:scale-110"
-                  disabled={popupQuantity >= maxQuantity}
-                >
-                  +
-                </button>
-              </div>
-              {maxQuantity > 0 && (
-                <span className="text-sm text-gray-600">
-                  Max: {maxQuantity}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="p-6 flex gap-3">
-            <button
-              onClick={() => {
-                setShowQuantityPopup(false);
-                setPopupQuantity(1);
-              }}
-              className="flex-1 py-3 px-4 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors transform hover:scale-105"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handlePopupAddToCart}
-              disabled={isAddingThisProduct}
-              className="flex-1 py-3 px-4 bg-gray-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-all hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-105"
-            >
-              {isAddingThisProduct ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <ShoppingBag size={16} />
-                  Add to Cart
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  // Get image URL
+  const imageUrl = product.images?.[0]?.image 
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${product.images[0].image}`
+    : '/placeholder-image.jpg';
 
   return (
     <>
@@ -222,15 +253,20 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Product Image Container */}
         <div className="relative p-3 sm:p-4 pb-0 overflow-hidden">
           <div className="relative h-32 xs:h-36 sm:h-40 md:h-48 bg-gray-100 flex items-center justify-center overflow-hidden rounded-lg">
-            <img
-              src={`${process.env.NEXT_PUBLIC_BASE_URL}${product.images[0].image}`}
-              alt={product.name}
-              className={`object-contain transition-all duration-300 ${
-                isHovered ? 'scale-110' : 'scale-100'
-              } 
-              max-h-28 xs:max-h-32 sm:max-h-32 md:max-h-40`}
-              onError={handleImageError}
-            />
+            <div className="relative w-full h-full">
+              <Image
+                src={imageUrl}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className={`object-contain transition-all duration-300 ${
+                  isHovered ? 'scale-110' : 'scale-100'
+                }`}
+                onError={handleImageError}
+                priority={false}
+                loading="lazy"
+              />
+            </div>
             
             {/* Quick View Overlay - Hidden on mobile, shown on tablet+ */}
             <div className={`absolute inset-0 bg-black/20 flex items-center justify-center transition-all duration-300 ${
@@ -315,7 +351,15 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Render quantity popup as portal */}
       {mounted && showQuantityPopup && createPortal(
-        <QuantityPopup />,
+        <QuantityPopup 
+          product={product}
+          popupQuantity={popupQuantity}
+          maxQuantity={maxQuantity}
+          isAddingThisProduct={isAddingThisProduct}
+          onClose={handlePopupClose}
+          onQuantityChange={handleQuantityChange}
+          onAddToCart={handlePopupAddToCart}
+        />,
         document.body
       )}
     </>

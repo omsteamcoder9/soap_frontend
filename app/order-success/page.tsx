@@ -7,20 +7,42 @@ import { useRouter } from 'next/navigation';
 export default function OrderSuccessPage() {
   const router = useRouter();
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(10); // Countdown for auto-redirect
+  const [countdown, setCountdown] = useState(10);
+  const [isClient, setIsClient] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Initialize client-side state
   useEffect(() => {
-    // Get orderId from URL parameters using window.location
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderIdParam = urlParams.get('orderId');
-    
-    if (orderIdParam) {
-      setOrderId(orderIdParam);
-    }
-
-    // Clear cart data
-    localStorage.removeItem('guestCart');
+    setIsClient(true);
   }, []);
+
+  // Get orderId and clear cart
+  useEffect(() => {
+    if (!isClient) return;
+
+    try {
+      // Get orderId from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderIdParam = urlParams.get('orderId');
+      
+      if (orderIdParam) {
+        setOrderId(orderIdParam);
+      } else {
+        setError('No order ID found in URL');
+      }
+
+      // Clear cart data (only if it exists)
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('guestCart');
+      }
+    } catch (err) {
+      console.error('Error processing order success:', err);
+      setError('Failed to process order details');
+    } finally {
+      setLoading(false);
+    }
+  }, [isClient]);
 
   // Countdown effect
   useEffect(() => {
@@ -29,6 +51,7 @@ export default function OrderSuccessPage() {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
+          clearInterval(timer);
           return 0;
         }
         return prev - 1;
@@ -45,7 +68,8 @@ export default function OrderSuccessPage() {
     }
   }, [countdown, orderId, router]);
 
-  if (!orderId) {
+  // Show loading state
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center py-12">
         <div className="container mx-auto px-4">
@@ -58,6 +82,45 @@ export default function OrderSuccessPage() {
     );
   }
 
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center bg-white rounded-lg shadow-md p-8 border border-gray-300">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-200">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h1>
+            
+            <p className="text-gray-600 mb-6">
+              {error}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link 
+                href="/"
+                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-3 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium text-center shadow-md hover:shadow-lg hover:shadow-gray-900/25"
+              >
+                Return to Home
+              </Link>
+              <Link 
+                href="/cart"
+                className="border border-gray-800 text-gray-800 px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white transition-all duration-200 font-medium text-center"
+              >
+                Back to Cart
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show success state
   return (
     <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center py-12">
       <div className="container mx-auto px-4">
@@ -83,7 +146,7 @@ export default function OrderSuccessPage() {
                 You will receive an order confirmation email shortly with all the details.
               </p>
               <p className="text-gray-700 text-sm mt-2 font-medium">
-                Redirecting to home page in {countdown} seconds...
+                {countdown > 0 ? `Redirecting to home page in ${countdown} seconds...` : 'Redirecting now...'}
               </p>
             </div>
           </div>
@@ -98,6 +161,10 @@ export default function OrderSuccessPage() {
             <Link 
               href="/"
               className="border border-gray-800 text-gray-800 px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white transition-all duration-200 font-medium text-center"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push('/');
+              }}
             >
               Go to Home Now
             </Link>

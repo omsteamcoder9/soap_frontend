@@ -1,14 +1,40 @@
 // lib/api.ts
-import { Product, ApiResponse } from '@/types/product';
-import { Category, CategoryResponse } from '@/types/category';
+import { Product } from '@/types/product';
+import { Category } from '@/types/category';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+// Define a type for API errors
+interface APIError extends Error {
+  status?: number;
+  details?: unknown;
+}
+
+// Define params interfaces
+interface GetAllProductsParams {
+  category?: string;
+  page?: number;
+  limit?: number;
+  sort?: string;
+  search?: string;
+}
+
+interface GetByCategoryParams {
+  page?: number;
+  limit?: number;
+  sort?: string;
+}
+
+interface GetAllCategoriesParams {
+  includeInactive?: boolean;
+  includeProductsCount?: boolean;
+}
+
 // Enhanced fetch wrapper with detailed error handling
-async function fetchAPI(endpoint: string, options: RequestInit = {}) {
+async function fetchAPI<T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_URL}${endpoint}`;
   
-  const config = {
+  const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -24,37 +50,39 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
     
     if (!response.ok) {
       let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      let errorDetails = null;
+      let errorDetails: unknown = null;
       
       try {
         // Try to get error details from response body
         const errorData = await responseClone.json();
         errorDetails = errorData;
         
-        if (errorData.message) {
-          errorMessage = `API Error: ${response.status} - ${errorData.message}`;
-        } else if (errorData.error) {
-          errorMessage = `API Error: ${response.status} - ${errorData.error}`;
+        if (errorData && typeof errorData === 'object') {
+          if ('message' in errorData && typeof errorData.message === 'string') {
+            errorMessage = `API Error: ${response.status} - ${errorData.message}`;
+          } else if ('error' in errorData && typeof errorData.error === 'string') {
+            errorMessage = `API Error: ${response.status} - ${errorData.error}`;
+          }
         }
-      } catch (parseError) {
+      } catch {
         // If response is not JSON, try to get text
         try {
           const errorText = await responseClone.text();
           if (errorText) {
             errorMessage = `API Error: ${response.status} - ${errorText}`;
           }
-        } catch (textError) {
+        } catch {
           // Use default error message
         }
       }
       
-      const error = new Error(errorMessage);
-      (error as any).status = response.status;
-      (error as any).details = errorDetails;
+      const error: APIError = new Error(errorMessage);
+      error.status = response.status;
+      error.details = errorDetails;
       throw error;
     }
     
-    const data = await response.json();
+    const data: T = await response.json();
     return data;
   } catch (error) {
     console.error(`API Fetch Error for ${endpoint}:`, error);
@@ -63,7 +91,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
     if (error instanceof Error) {
       throw error;
     } else {
-      throw new Error(`Network error: ${error}`);
+      throw new Error(`Network error: ${String(error)}`);
     }
   }
 }
@@ -71,13 +99,7 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
 // Product API functions
 export const productAPI = {
   // Get all products with optional filtering
-  getAll: async (params?: {
-    category?: string;
-    page?: number;
-    limit?: number;
-    sort?: string;
-    search?: string;
-  }): Promise<{ success: boolean; data: Product[]; count: number }> => {
+  getAll: async (params?: GetAllProductsParams): Promise<{ success: boolean; data: Product[]; count: number }> => {
     const queryParams = new URLSearchParams();
     
     if (params) {
@@ -91,23 +113,24 @@ export const productAPI = {
     const queryString = queryParams.toString();
     const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
     
-    return fetchAPI(endpoint);
+    return fetchAPI<{ success: boolean; data: Product[]; count: number }>(endpoint);
   },
 
   // Get product by ID
   getById: async (id: string): Promise<{ success: boolean; data: Product }> => {
-    return fetchAPI(`/products/${id}`);
+    return fetchAPI<{ success: boolean; data: Product }>(`/products/${id}`);
   },
 
   // Get product by slug with fallback
   getBySlug: async (slug: string): Promise<{ success: boolean; data: Product }> => {
     try {
-      return await fetchAPI(`/products/slug/${slug}`);
-    } catch (error: any) {
+      return await fetchAPI<{ success: boolean; data: Product }>(`/products/slug/${slug}`);
+    } catch (error: unknown) {
       // If slug endpoint fails, try to find by slug from all products
-      if (error.status === 404 || error.status === 500) {
+      const apiError = error as APIError;
+      if (apiError.status === 404 || apiError.status === 500) {
         console.warn(`Slug endpoint failed, trying search fallback for slug: ${slug}`);
-        const allProducts = await fetchAPI('/products');
+        const allProducts = await fetchAPI<{ success: boolean; data: Product[]; count: number }>('/products');
         const product = allProducts.data.find((p: Product) => p.slug === slug);
         
         if (product) {
@@ -119,11 +142,7 @@ export const productAPI = {
   },
 
   // Get products by category
-  getByCategory: async (categoryId: string, params?: {
-    page?: number;
-    limit?: number;
-    sort?: string;
-  }): Promise<{ 
+  getByCategory: async (categoryId: string, params?: GetByCategoryParams): Promise<{ 
     success: boolean; 
     data: {
       category: Category;
@@ -148,17 +167,25 @@ export const productAPI = {
     const queryString = queryParams.toString();
     const endpoint = `/categories/${categoryId}/products${queryString ? `?${queryString}` : ''}`;
     
-    return fetchAPI(endpoint);
+    return fetchAPI<{ 
+      success: boolean; 
+      data: {
+        category: Category;
+        products: Product[];
+        pagination: {
+          current: number;
+          pages: number;
+          total: number;
+        }
+      }
+    }>(endpoint);
   },
 };
 
 // Category API functions
 export const categoryAPI = {
   // Get all categories
-  getAll: async (params?: {
-    includeInactive?: boolean;
-    includeProductsCount?: boolean;
-  }): Promise<{ success: boolean; data: Category[]; count: number }> => {
+  getAll: async (params?: GetAllCategoriesParams): Promise<{ success: boolean; data: Category[]; count: number }> => {
     const queryParams = new URLSearchParams();
     
     if (params) {
@@ -172,22 +199,22 @@ export const categoryAPI = {
     const queryString = queryParams.toString();
     const endpoint = `/categories${queryString ? `?${queryString}` : ''}`;
     
-    return fetchAPI(endpoint);
+    return fetchAPI<{ success: boolean; data: Category[]; count: number }>(endpoint);
   },
 
   // Get category by ID or slug
   getById: async (id: string): Promise<{ success: boolean; data: Category }> => {
-    return fetchAPI(`/categories/${id}`);
+    return fetchAPI<{ success: boolean; data: Category }>(`/categories/${id}`);
   },
 
   // Get categories tree
   getTree: async (): Promise<{ success: boolean; data: Category[] }> => {
-    return fetchAPI('/categories/tree');
+    return fetchAPI<{ success: boolean; data: Category[] }>('/categories/tree');
   },
 
   // Get active categories only
   getActive: async (): Promise<{ success: boolean; data: Category[]; count: number }> => {
-    return fetchAPI('/categories/active');
+    return fetchAPI<{ success: boolean; data: Category[]; count: number }>('/categories/active');
   },
 };
 

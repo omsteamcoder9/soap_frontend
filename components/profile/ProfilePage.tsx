@@ -1,4 +1,4 @@
-// app/profile/page.tsx - SIMPLIFIED VERSION
+// app/profile/page.tsx - CORRECTED VERSION
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,9 +7,15 @@ import { Order } from '@/types/order';
 import { useRouter } from 'next/navigation';
 
 // Cancel order function for profile page
+// Option 1: Strongly typed interface
+interface CancelOrderRequest {
+  cancellationReason?: string;
+}
+
 const cancelOrder = async (orderId: string, token: string, cancellationReason?: string): Promise<Order> => {
   try {
-    const cancelData: any = {};
+    // Create properly typed request data
+    const cancelData: CancelOrderRequest = {};
     if (cancellationReason) {
       cancelData.cancellationReason = cancellationReason;
     }
@@ -77,9 +83,9 @@ export default function UserProfile() {
         setActiveOrders(nonCancelledOrders);
         setCancelledOrders(cancelledOrdersList);
         
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error fetching orders:', err);
-        setError(err.message || 'Failed to load orders.');
+        setError(err instanceof Error ? err.message : 'Failed to load orders.');
       } finally {
         setLoading(false);
       }
@@ -114,9 +120,9 @@ export default function UserProfile() {
         throw new Error('Order data not found in response');
       }
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching order details:', err);
-      setError('Failed to load order details: ' + err.message);
+      setError(`Failed to load order details: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -136,7 +142,7 @@ export default function UserProfile() {
       }
 
       setCancellingOrderId(selectedOrder._id);
-      const updatedOrder = await cancelOrder(selectedOrder._id, token, cancellationReason);
+      await cancelOrder(selectedOrder._id, token, cancellationReason);
       
       // Update the orders state
       setOrders(prevOrders => 
@@ -162,15 +168,14 @@ export default function UserProfile() {
       setSelectedOrder(null);
       setCancellationReason('');
       
-    } catch (err: any) {
-      setError(err.message || 'Failed to cancel order');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel order');
       console.error('Error cancelling order:', err);
     } finally {
       setCancellingOrderId(null);
     }
   };
 
-  // MODIFIED: Function to open PDF in modal instead of new tab
   const handleViewPDF = async (orderId: string) => {
     try {
       setPdfLoading(true);
@@ -184,7 +189,6 @@ export default function UserProfile() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const pdfEndpoint = `${apiUrl}/orders/${orderId}/receipt/pdf`;
       
-      // Fetch PDF as blob
       const response = await fetch(pdfEndpoint, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -198,11 +202,10 @@ export default function UserProfile() {
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       
-      // Set the PDF URL for the iframe and show modal
       setPdfUrl(blobUrl);
       setShowPDFModal(true);
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error opening PDF:', err);
       setError('Failed to load PDF. Please try again.');
     } finally {
@@ -210,7 +213,6 @@ export default function UserProfile() {
     }
   };
 
-  // Clean up blob URL when modal closes
   const closePDFModal = () => {
     if (pdfUrl) {
       URL.revokeObjectURL(pdfUrl);
@@ -241,8 +243,8 @@ export default function UserProfile() {
       }
     };
 
-    const typeColors = statusColors[type];
-    const colorClass = (typeColors as any)[status] || 'bg-gray-100 text-gray-800 border border-gray-200';
+    const typeColors = type === 'order' ? statusColors.order : statusColors.payment;
+    const colorClass = typeColors[status as keyof typeof typeColors] || 'bg-gray-100 text-gray-800 border border-gray-200';
     
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
@@ -477,7 +479,7 @@ export default function UserProfile() {
                                   </span>
                                 </div>
                               ))}
-                              {order.products?.length > 3 && (
+                              {order.products && order.products.length > 3 && (
                                 <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
                                   <span className="text-sm text-gray-700">
                                     +{order.products.length - 3} more
@@ -515,7 +517,7 @@ export default function UserProfile() {
                               </button>
                             )}
                             
-                            {/* View PDF Button - Opens PDF in modal */}
+                            {/* View PDF Button */}
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -694,7 +696,7 @@ export default function UserProfile() {
                       </svg>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">No cancelled orders</h3>
-                    <p className="text-gray-600">You haven't cancelled any orders yet</p>
+                    <p className="text-gray-600">You haven&apos;t cancelled any orders yet</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200">
@@ -763,7 +765,7 @@ export default function UserProfile() {
                                   </span>
                                 </div>
                               ))}
-                              {order.products?.length > 3 && (
+                              {order.products && order.products.length > 3 && (
                                 <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
                                   <span className="text-sm text-gray-700">
                                     +{order.products.length - 3} more

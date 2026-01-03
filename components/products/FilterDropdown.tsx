@@ -3,28 +3,28 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-interface FilterOption {
-  value: any;
+interface FilterOption<T> {
+  value: T;
   label: string;
 }
 
-interface FilterDropdownProps {
+interface FilterDropdownProps<T> {
   title: string;
-  value: any;
-  options: FilterOption[];
-  onSelect: (value: any) => void;
+  value: T | T[];
+  options: FilterOption<T>[];
+  onSelect: (value: T | T[]) => void;
   multiSelect?: boolean;
   compact?: boolean;
 }
 
-export default function FilterDropdown({ 
+export default function FilterDropdown<T>({ 
   title, 
   value, 
   options, 
   onSelect, 
   multiSelect = false,
   compact = false 
-}: FilterDropdownProps) {
+}: FilterDropdownProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -50,15 +50,21 @@ export default function FilterDropdown({
       if (selectedLabels.length === 1) return selectedLabels[0];
       if (selectedLabels.length > 1) return `${selectedLabels.length} selected`;
     } else if (!multiSelect) {
-      const selectedOption = options.find(opt => opt.value === value);
-      if (selectedOption && selectedOption.value !== '' && selectedOption.value !== false) {
+      const selectedOption = options.find(opt => {
+        // Handle different comparison cases
+        if (value === undefined || value === null) return false;
+        if (typeof value === 'string' && value.trim() === '') return false;
+        if (typeof value === 'boolean' && value === false) return false;
+        return opt.value === value;
+      });
+      if (selectedOption) {
         return selectedOption.label;
       }
     }
     return compact ? title : title;
   };
 
-  const handleSelect = (optionValue: any) => {
+  const handleSelect = (optionValue: T) => {
     if (multiSelect) {
       const currentValues = Array.isArray(value) ? value : [];
       const newValues = currentValues.includes(optionValue)
@@ -73,7 +79,7 @@ export default function FilterDropdown({
 
   const isActive = multiSelect 
     ? Array.isArray(value) && value.length > 0
-    : value !== '' && value !== false;
+    : value !== '' && value !== false && value !== undefined && value !== null;
 
   const displayLabel = getDisplayLabel();
 
@@ -106,14 +112,14 @@ export default function FilterDropdown({
 
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 w-48 bg-[#f2f2f2] border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
-          {options.map((option) => {
+          {options.map((option, index) => {
             const isSelected = multiSelect
               ? Array.isArray(value) && value.includes(option.value)
               : value === option.value;
 
             return (
               <button
-                key={JSON.stringify(option.value)}
+                key={index}
                 onClick={() => handleSelect(option.value)}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-200 transition-all duration-200 ${
                   isSelected

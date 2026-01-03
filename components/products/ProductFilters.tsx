@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Category } from '@/types/category';
-import { PRICE_RANGES, SORT_OPTIONS } from '@/lib/productService';
+import { PRICE_RANGES } from '@/lib/productService';
 
 interface ProductFiltersProps {
   categories: Category[];
@@ -14,13 +14,19 @@ interface ProductFiltersProps {
     sortBy?: string;
     sortOrder?: string;
   };
-  onFiltersChange: (filters: any) => void;
+  onFiltersChange: (filters: {
+    category?: string;
+    priceRange?: string;
+    featured?: boolean;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => void;
 }
 
 export default function ProductFilters({ categories, filters, onFiltersChange }: ProductFiltersProps) {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: keyof typeof filters, value: string | boolean) => {
     onFiltersChange({
       ...filters,
       [key]: value
@@ -36,89 +42,6 @@ export default function ProductFilters({ categories, filters, onFiltersChange }:
       sortOrder: 'desc'
     });
   };
-
-  const FilterSection = () => (
-    <div className="space-y-6">
-      {/* Categories */}
-      <div>
-        <h3 className="font-semibold text-gray-900 mb-3">Categories</h3>
-        <div className="space-y-2">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="category"
-              checked={!filters.category}
-              onChange={() => handleFilterChange('category', '')}
-              className="text-gray-600 focus:ring-gray-600"
-            />
-            <span className="ml-2 text-gray-700">All Categories</span>
-          </label>
-          {categories.map((category) => (
-            <label key={category._id} className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                name="category"
-                checked={filters.category === category._id}
-                onChange={() => handleFilterChange('category', category._id)}
-                className="text-gray-600 focus:ring-gray-600"
-              />
-              <span className="ml-2 text-gray-700">{category.name}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Price Range */}
-      <div>
-        <h3 className="font-semibold text-gray-900 mb-3">Price Range</h3>
-        <div className="space-y-2">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="priceRange"
-              checked={!filters.priceRange}
-              onChange={() => handleFilterChange('priceRange', '')}
-              className="text-gray-600 focus:ring-gray-600"
-            />
-            <span className="ml-2 text-gray-700">All Prices</span>
-          </label>
-          {PRICE_RANGES.map((range) => (
-            <label key={range.value} className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                name="priceRange"
-                checked={filters.priceRange === range.value}
-                onChange={() => handleFilterChange('priceRange', range.value)}
-                className="text-gray-600 focus:ring-gray-600"
-              />
-              <span className="ml-2 text-gray-700">{range.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Featured */}
-      <div>
-        <label className="flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={filters.featured || false}
-            onChange={(e) => handleFilterChange('featured', e.target.checked)}
-            className="text-gray-600 focus:ring-gray-600"
-          />
-          <span className="ml-2 text-gray-700 font-semibold">Featured Products Only</span>
-        </label>
-      </div>
-
-      {/* Clear Filters */}
-      <button
-        onClick={clearAllFilters}
-        className="w-full py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:border-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer"
-      >
-        Clear All Filters
-      </button>
-    </div>
-  );
 
   return (
     <>
@@ -150,7 +73,86 @@ export default function ProductFilters({ categories, filters, onFiltersChange }:
                 </svg>
               </button>
             </div>
-            <FilterSection />
+            <div className="space-y-6">
+              {/* Categories */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Categories</h3>
+                <div className="space-y-2">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="category"
+                      checked={!filters.category}
+                      onChange={() => handleFilterChange('category', '')}
+                      className="text-gray-600 focus:ring-gray-600"
+                    />
+                    <span className="ml-2 text-gray-700">All Categories</span>
+                  </label>
+                  {categories.map((category) => (
+                    <label key={category._id} className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="category"
+                        checked={filters.category === category._id}
+                        onChange={() => handleFilterChange('category', category._id)}
+                        className="text-gray-600 focus:ring-gray-600"
+                      />
+                      <span className="ml-2 text-gray-700">{category.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price Range */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Price Range</h3>
+                <div className="space-y-2">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="priceRange"
+                      checked={!filters.priceRange}
+                      onChange={() => handleFilterChange('priceRange', '')}
+                      className="text-gray-600 focus:ring-gray-600"
+                    />
+                    <span className="ml-2 text-gray-700">All Prices</span>
+                  </label>
+                  {PRICE_RANGES.map((range) => (
+                    <label key={range.value} className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="priceRange"
+                        checked={filters.priceRange === range.value}
+                        onChange={() => handleFilterChange('priceRange', range.value)}
+                        className="text-gray-600 focus:ring-gray-600"
+                      />
+                      <span className="ml-2 text-gray-700">{range.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Featured */}
+              <div>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.featured || false}
+                    onChange={(e) => handleFilterChange('featured', e.target.checked)}
+                    className="text-gray-600 focus:ring-gray-600"
+                  />
+                  <span className="ml-2 text-gray-700 font-semibold">Featured Products Only</span>
+                </label>
+              </div>
+
+              {/* Clear Filters */}
+              <button
+                onClick={clearAllFilters}
+                className="w-full py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:border-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer"
+              >
+                Clear All Filters
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -166,7 +168,86 @@ export default function ProductFilters({ categories, filters, onFiltersChange }:
             Clear
           </button>
         </div>
-        <FilterSection />
+        <div className="space-y-6">
+          {/* Categories */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3">Categories</h3>
+            <div className="space-y-2">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="category"
+                  checked={!filters.category}
+                  onChange={() => handleFilterChange('category', '')}
+                  className="text-gray-600 focus:ring-gray-600"
+                />
+                <span className="ml-2 text-gray-700">All Categories</span>
+              </label>
+              {categories.map((category) => (
+                <label key={category._id} className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={filters.category === category._id}
+                    onChange={() => handleFilterChange('category', category._id)}
+                    className="text-gray-600 focus:ring-gray-600"
+                  />
+                  <span className="ml-2 text-gray-700">{category.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Price Range */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3">Price Range</h3>
+            <div className="space-y-2">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="priceRange"
+                  checked={!filters.priceRange}
+                  onChange={() => handleFilterChange('priceRange', '')}
+                  className="text-gray-600 focus:ring-gray-600"
+                />
+                <span className="ml-2 text-gray-700">All Prices</span>
+              </label>
+              {PRICE_RANGES.map((range) => (
+                <label key={range.value} className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="priceRange"
+                    checked={filters.priceRange === range.value}
+                    onChange={() => handleFilterChange('priceRange', range.value)}
+                    className="text-gray-600 focus:ring-gray-600"
+                  />
+                  <span className="ml-2 text-gray-700">{range.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Featured */}
+          <div>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={filters.featured || false}
+                onChange={(e) => handleFilterChange('featured', e.target.checked)}
+                className="text-gray-600 focus:ring-gray-600"
+              />
+              <span className="ml-2 text-gray-700 font-semibold">Featured Products Only</span>
+            </label>
+          </div>
+
+          {/* Clear Filters */}
+          <button
+            onClick={clearAllFilters}
+            className="w-full py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:border-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer"
+          >
+            Clear All Filters
+          </button>
+        </div>
       </div>
     </>
   );

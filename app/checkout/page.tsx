@@ -14,8 +14,57 @@ import {
 
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: {
+      new (options: RazorpayOptions): RazorpayInstance;
+    };
   }
+}
+
+interface RazorpayOptions {
+  key: string | undefined;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  image: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => Promise<void> | void;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  notes: {
+    orderId: string;
+    address: string;
+  };
+  theme: {
+    color: string;
+  };
+  modal: {
+    ondismiss: () => void;
+  };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: 'payment.failed', handler: (response: RazorpayErrorResponse) => void) => void;
+}
+
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayErrorResponse {
+  error: {
+    code: string;
+    description: string;
+    source: string;
+    step: string;
+    reason: string;
+  };
 }
 
 interface FormData {
@@ -207,15 +256,15 @@ export default function CheckoutPage() {
         console.log('Razorpay order created:', razorpayOrder);
 
         // STEP 3: Open Razorpay checkout
-        const options = {
+        const options: RazorpayOptions = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency || 'INR',
           name: 'soap',
           description: 'Order Payment',
-          image: '/logo.png',
+          image: '/logo2.png',
           order_id: razorpayOrder.id,
-          handler: async function (response: any) {
+          handler: async function (response: RazorpayResponse) {
             try {
               console.log('Razorpay payment response:', response);
               
@@ -265,7 +314,7 @@ export default function CheckoutPage() {
             address: formData.address,
           },
           theme: {
-            color: '#6B7280', // Changed to gray color
+            color: '#6B7280',
           },
           modal: {
             ondismiss: function() {
@@ -277,7 +326,7 @@ export default function CheckoutPage() {
 
         const razorpay = new window.Razorpay(options);
         
-        razorpay.on('payment.failed', function (response: any) {
+        razorpay.on('payment.failed', function (response: RazorpayErrorResponse) {
           console.error('Payment failed:', response.error);
           alert(`Payment failed: ${response.error.description}`);
           setPaymentLoading(false);
@@ -285,21 +334,24 @@ export default function CheckoutPage() {
 
         razorpay.open();
 
-      } catch (orderError: any) {
+      } catch (orderError: unknown) {
         console.error('Order creation error:', orderError);
         
+        const errorMessage = orderError instanceof Error ? orderError.message : 'Unknown error occurred';
+        
         // Handle token expiration specifically
-        if (orderError.message?.includes('token') || orderError.message?.includes('auth') || orderError.message?.includes('unauthorized')) {
+        if (errorMessage.includes('token') || errorMessage.includes('auth') || errorMessage.includes('unauthorized')) {
           handleAuthError();
         } else {
-          alert(orderError.message || 'Failed to create order. Please try again.');
+          alert(errorMessage || 'Failed to create order. Please try again.');
         }
         setPaymentLoading(false);
       }
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Payment error:', error);
-      alert(error.message || 'Payment initialization failed. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Payment initialization failed. Please try again.';
+      alert(errorMessage);
       setPaymentLoading(false);
     }
   };
@@ -396,14 +448,16 @@ export default function CheckoutPage() {
         window.location.href = `/order-success?orderId=${orderId}`;
       }
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('COD order error:', error);
       
+      const errorMessage = error instanceof Error ? error.message : 'Order creation failed. Please try again.';
+      
       // Handle token expiration specifically
-      if (error.message?.includes('token') || error.message?.includes('auth') || error.message?.includes('unauthorized')) {
+      if (errorMessage.includes('token') || errorMessage.includes('auth') || errorMessage.includes('unauthorized')) {
         handleAuthError();
       } else {
-        alert(error.message || 'Order creation failed. Please try again.');
+        alert(errorMessage);
       }
     } finally {
       setLoading(false);

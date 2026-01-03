@@ -95,8 +95,18 @@ export default function SignupForm() {
       } else {
         setError(response.message || 'Registration failed. Please try again.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        errorMessage = (err as { message: string }).message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

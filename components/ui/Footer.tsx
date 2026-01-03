@@ -1,3 +1,7 @@
+'use client';
+import Link from 'next/link';
+import Image from 'next/image';
+
 export default function Footer() {
   return (
     <footer className="bg-[#f2f2f2] text-gray-700 border-t border-gray-200 py-12">
@@ -6,16 +10,22 @@ export default function Footer() {
 
           {/* Company Info */}
           <div>
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow border border-gray-200">
-                <span className="text-gray-800 font-bold text-sm">S</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900">soap</h3>
-            </div>
-            <p className="text-gray-600">
-              Your one-stop destination for soaps, stationery, and educational resources.
-            </p>
-          </div>
+  <div className="flex items-center space-x-3 mb-4">
+    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow border border-gray-200 overflow-hidden">
+      <Image 
+        src="/images/logo2.png" 
+        alt="Soap icon"
+        width={24}
+        height={24}
+        className="object-contain"
+      />
+    </div>
+    <h3 className="text-xl font-semibold text-gray-900">soap</h3>
+  </div>
+  <p className="text-gray-600">
+    Your one-stop destination for soaps, stationery, and educational resources.
+  </p>
+</div>
 
           {/* Quick Links */}
           <div>
@@ -23,13 +33,13 @@ export default function Footer() {
             <ul className="space-y-2 text-gray-600">
               {["Home", "Products", "About", "Contact"].map((item) => (
                 <li key={item}>
-                  <a
-                    href={`/${item.toLowerCase()}`}
+                  <Link
+                    href={`/${item.toLowerCase() === 'home' ? '' : item.toLowerCase()}`}
                     className="hover:text-gray-900 transition-colors duration-200 flex items-center"
                   >
                     <span className="w-1 h-1 bg-gray-400 rounded-full mr-2"></span>
                     {item}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -44,13 +54,13 @@ export default function Footer() {
               {["Shipping Info", "Returns", "Privacy Policy", "Terms of Service"].map(
                 (item) => (
                   <li key={item}>
-                    <a
+                    <Link
                       href="/"
                       className="hover:text-gray-900 transition-colors duration-200 flex items-center"
                     >
                       <span className="w-1 h-1 bg-gray-400 rounded-full mr-2"></span>
                       {item}
-                    </a>
+                    </Link>
                   </li>
                 )
               )}
@@ -64,7 +74,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3 text-gray-600">
               <li>support@soap.com</li>
-              <li>+91 8787654332</li>
+              <li>+91 7200074221</li>
               <li>Mon–Fri · 9AM–6PM</li>
             </ul>
 
@@ -75,6 +85,7 @@ export default function Footer() {
                   key={i}
                   href="#"
                   className="text-gray-400 hover:text-gray-800 transition"
+                  onClick={(e) => e.preventDefault()} // Prevent actual navigation
                 >
                   ●
                 </a>
@@ -88,9 +99,9 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
             <p>© 2024 soap. All rights reserved.</p>
             <div className="flex space-x-6 mt-3 md:mt-0">
-              <a href="/privacy" className="hover:text-gray-800">Privacy</a>
-              <a href="/terms" className="hover:text-gray-800">Terms</a>
-              <a href="/cookies" className="hover:text-gray-800">Cookies</a>
+              <Link href="/privacy" className="hover:text-gray-800">Privacy</Link>
+              <Link href="/terms" className="hover:text-gray-800">Terms</Link>
+              <Link href="/cookies" className="hover:text-gray-800">Cookies</Link>
             </div>
           </div>
         </div>

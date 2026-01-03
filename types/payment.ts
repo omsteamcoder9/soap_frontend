@@ -22,9 +22,47 @@ export interface ShipmentData {
   manifestUrl: string;
 }
 
+// Define an interface for the order object in the response
+export interface OrderInResponse {
+  _id: string;
+  orderId: string;
+  userId?: string;
+  customer?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  items: Array<{
+    product: string | {
+      _id: string;
+      name: string;
+      slug: string;
+    };
+    quantity: number;
+    selectedSize?: string;
+    price: number;
+  }>;
+  shippingAddress: {
+    fullName: string;
+    address: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country: string;
+    phone: string;
+  };
+  totalAmount: number;
+  finalAmount: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  orderStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PaymentVerificationResponse {
   success: boolean;
-  order: any;
+  order: OrderInResponse;
   message: string;
   shipment?: {
     success: boolean;

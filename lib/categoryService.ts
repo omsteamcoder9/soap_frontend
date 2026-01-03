@@ -45,3 +45,20 @@ export async function fetchActiveCategories(): Promise<Category[]> {
     return [];
   }
 }
+// lib/categoryService.ts - Add this function
+export async function getCategoryBySlug(slug: string) {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/slug/${slug}`, {
+      cache: 'force-cache',
+      next: { revalidate: 3600 } // Revalidate every hour
+    });
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    return data.success ? data.data : null;
+  } catch (error) {
+    console.error('Error fetching category by slug:', error);
+    return null;
+  }
+}

@@ -17,7 +17,7 @@ export default function ContactInfo() {
         </svg>
       ),
       title: 'Phone',
-      details: '+91 9876543210',
+      details: '+91 7200074221',
       description: 'Mon-Fri from 9am to 6pm'
     },
     {
@@ -37,7 +37,7 @@ export default function ContactInfo() {
     <div className="bg-[#f2f2f2] rounded-lg p-8 border border-gray-300">
       <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
       <p className="text-gray-700 mb-8">
-        We're here to help and answer any questions you might have about our soaps, orders, or services. We look forward to hearing from you.
+        We&apos;re here to help and answer any questions you might have about our soaps, orders, or services. We look forward to hearing from you.
       </p>
       
       <div className="space-y-6">

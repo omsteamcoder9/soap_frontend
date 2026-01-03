@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useState, useEffect, useRef } from 'react';
 import { fetchActiveCategories } from '@/lib/categoryService';
-import { quickSearchProducts, getProductImageUrl } from '@/lib/productService';
+import { quickSearchProducts } from '@/lib/productService';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -28,7 +28,7 @@ interface SearchProduct {
 }
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logo2ut } = useAuth();
   const { cart } = useCart();
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -52,18 +52,16 @@ export default function Header() {
 
   // Check if mobile
   const [isMobile, setIsMobile] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+ 
+useEffect(() => {
+  const checkScreenSize = () => {
+    setIsMobile(window.innerWidth < 1280);
+  };
 
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 1280);
-      setIsDesktop(window.innerWidth >= 1280);
-    };
-
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+  checkScreenSize();
+  window.addEventListener('resize', checkScreenSize);
+  return () => window.removeEventListener('resize', checkScreenSize);
+}, []);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -138,8 +136,8 @@ export default function Header() {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  const handleLogout = () => {
-    logout();
+  const handlelogo2ut = () => {
+    logo2ut();
     setShowDropdown(false);
     setIsMobileMenuOpen(false);
     router.push('/');
@@ -183,13 +181,8 @@ export default function Header() {
     return categories.slice(0, 3);
   };
 
-  // Get remaining categories for shop dropdown (after first 3)
-  const getRemainingCategories = () => {
-    return categories.slice(3);
-  };
-
   const firstThreeCategories = getFirstThreeCategories();
-  const remainingCategories = getRemainingCategories();
+  
 
   // Close dropdowns when clicking outside or pressing Escape
   useEffect(() => {
@@ -248,7 +241,7 @@ export default function Header() {
       <header className="bg-[#f2f2f2] shadow-md border-b border-gray-200 font-sans">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Logo and Mobile Menu Button */}
+            {/* logo2 and Mobile Menu Button */}
             <div className="flex items-center space-x-2 sm:space-x-3">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -260,19 +253,19 @@ export default function Header() {
                 </svg>
               </button>
 
-              {/* Logo */}
+              {/* logo2 */}
               <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group cursor-pointer">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white rounded-lg flex items-center justify-center shadow border border-gray-200 group-hover:scale-105 transition-transform duration-200 overflow-hidden">
                   <Image
-                      src="/images/logoo.png"
-                    alt="soap Logo"
+                      src="/images/logo2.png"
+                    alt="soap logo2"
                     width={48}
                     height={48}
                     priority
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 tracking-tight">soap</span>
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 tracking-tight">GLAINIC SOAP</span>
                 </div>
               </Link>
             </div>
@@ -297,66 +290,7 @@ export default function Header() {
                 </Link>
               ))}
               
-              {/* Shop Dropdown - ALWAYS SHOW */}
-              <div ref={shopDropdownRef} className="relative">
-                <button
-                  onClick={() => setShowShopDropdown(!showShopDropdown)}
-                  className="flex items-center space-x-1 text-gray-700 hover:text-gray-900 transition-all duration-200 font-medium px-3 py-2 rounded-lg hover:bg-gray-100 border-b-2 border-transparent hover:border-gray-300 text-sm 2xl:text-base cursor-pointer"
-                >
-                  <span>Shop</span>
-                  <svg
-                    className={`w-3 h-3 md:w-4 md:h-4 transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* Shop Dropdown Menu */}
-                {showShopDropdown && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
-                    <div className="px-3 py-2 border-b border-gray-100">
-                      <p className="text-gray-900 font-bold text-sm">Shop Categories</p>
-                    </div>
-                    
-                    {/* Show "All Categories" if no remaining categories */}
-                    {remainingCategories.length === 0 ? (
-                      <div className="px-3 py-2">
-                        <p className="text-sm text-gray-500">All categories shown above</p>
-                      </div>
-                    ) : (
-                      /* Remaining Categories (4th, 5th, etc.) */
-                      remainingCategories.map((category) => (
-                        <Link
-                          key={category._id}
-                          href={`/products?category=${category.slug}`}
-                          className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 cursor-pointer"
-                          onClick={() => setShowShopDropdown(false)}
-                        >
-                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                          </svg>
-                          <span>{category.name}</span>
-                        </Link>
-                      ))
-                    )}
-                    
-                    {/* View All Products Link */}
-                    <Link
-                      href="/products"
-                      className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 cursor-pointer border-t border-gray-100 mt-1"
-                      onClick={() => setShowShopDropdown(false)}
-                    >
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                      <span className="font-medium">View All Products</span>
-                    </Link>
-                  </div>
-                )}
-              </div>
+           
               
               <Link 
                 href="/about" 
@@ -460,43 +394,45 @@ export default function Header() {
                               <>
                                 <div className="p-2">
                                   <p className="text-xs text-gray-500 font-medium px-2 py-1">Search Results</p>
-                                  {searchResults.map((product) => (
-                                    <div
-                                      key={product._id}
-                                      className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors"
-                                      onClick={() => handleProductClick(product)}
-                                    >
-                                      <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden border">
-                                        {product.image ? (
-                                          <img
-                                            src={`${process.env.NEXT_PUBLIC_BASE_URL}${product.image}`}
-                                            className="w-full h-full object-cover"
-                                            alt={product.name}
-                                          />
-                                        ) : (
-                                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                            </svg>
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="ml-3 flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                                        <div className="flex items-center justify-between">
-                                          <p className="text-xs text-gray-500">{product.category}</p>
-                                          <p className="text-gray-700 font-medium text-sm">₹{product.price}</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
+                                 {searchResults.map((product) => (
+  <div
+    key={product._id}
+    className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors"
+    onClick={() => handleProductClick(product)}
+  >
+    <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden border relative">
+      {product.image ? (
+        <Image
+          src={`${process.env.NEXT_PUBLIC_BASE_URL}${product.image}`}
+          className="w-full h-full object-cover"
+          alt={product.name}
+          fill
+          sizes="40px"
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+      )}
+    </div>
+    <div className="ml-3 flex-1 min-w-0">
+      <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-gray-500">{product.category}</p>
+        <p className="text-gray-700 font-medium text-sm">₹{product.price}</p>
+      </div>
+    </div>
+  </div>
+))}
                                 </div>
                                 <div
                                   className="border-t border-gray-100 p-3 bg-gray-50 hover:bg-gray-100 cursor-pointer text-center"
                                   onClick={handleViewAllResults}
                                 >
                                   <p className="text-sm font-medium text-gray-700 hover:text-gray-900">
-                                    View all results for "{searchQuery}"
+                                    View all results for &quot;{searchQuery}&quot;
                                   </p>
                                 </div>
                               </>
@@ -576,7 +512,7 @@ export default function Header() {
                           <span>My Profile</span>
                         </Link>
                         <button
-                          onClick={handleLogout}
+                          onClick={handlelogo2ut}
                           className="flex items-center space-x-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200 rounded-b-lg cursor-pointer"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -621,7 +557,7 @@ export default function Header() {
                     >
                       <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow border border-gray-200 overflow-hidden">
                         <Image
-  src="/images/logoo.png"                          alt="soap Logo"
+                            src="/images/logo2.png"  alt="soap logo2"
                           width={32}
                           height={32}
                         />

@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export interface PaymentVerificationResponse {
   success: boolean;
-  order: any;
+  order: Record<string, unknown>; // Changed from any
   message: string;
   shipment?: {
     success: boolean;
@@ -25,7 +25,7 @@ export interface PaymentVerificationResponse {
 /* -------------------------------------------------------------------------- */
 /* 🧩 1. Create Guest Order (returns orderId for Razorpay)                   */
 /* -------------------------------------------------------------------------- */
-export async function createGuestOrder(orderData: any): Promise<{ orderId: string; finalAmount: number }> {
+export async function createGuestOrder(orderData: Record<string, unknown>): Promise<{ orderId: string; finalAmount: number }> {
   try {
     console.log('Creating guest order:', orderData);
     
@@ -77,7 +77,7 @@ export async function createGuestOrder(orderData: any): Promise<{ orderId: strin
 /* -------------------------------------------------------------------------- */
 /* 🧩 2. Create User Order (for registered users)                            */
 /* -------------------------------------------------------------------------- */
-export async function createUserOrder(orderData: any, token: string): Promise<{ orderId: string; finalAmount: number }> {
+export async function createUserOrder(orderData: Record<string, unknown>, token: string): Promise<{ orderId: string; finalAmount: number }> {
   try {
     console.log('Creating user order:', orderData);
     
@@ -231,7 +231,7 @@ export async function paymentFailed(razorpay_order_id: string): Promise<boolean>
 /* -------------------------------------------------------------------------- */
 /* 🧩 7. Track Shipment                                                      */
 /* -------------------------------------------------------------------------- */
-export async function trackShipment(shipmentId: string): Promise<any> {
+export async function trackShipment(shipmentId: string): Promise<Record<string, unknown>> {
   try {
     const response = await fetch(`${API_BASE_URL}/shipping/track/${shipmentId}`, {
       method: 'GET',

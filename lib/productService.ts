@@ -3,7 +3,6 @@ import {
   Product, 
   ApiResponse, 
   FilterOptions, 
-  PriceRange, 
   FilteredProductsResponse,
   FeaturedProductsResponse,
   PriceRangesResponse 
@@ -11,8 +10,11 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
+// Define a type for API parameters
+type APIParams = Record<string, string | number | boolean | string[] | number[] | undefined>;
+
 // Helper function to handle API calls
-async function fetchAPI<T>(endpoint: string, params: Record<string, any> = {}): Promise<T> {
+async function fetchAPI<T>(endpoint: string, params: APIParams = {}): Promise<T> {
   try {
     const url = new URL(`${API_BASE_URL}${endpoint}`);
     
@@ -21,13 +23,14 @@ async function fetchAPI<T>(endpoint: string, params: Record<string, any> = {}): 
     
     // Add query parameters
     Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
-        if (Array.isArray(params[key])) {
-          params[key].forEach((value: string) => {
-            url.searchParams.append(key, value.toString());
+      const value = params[key];
+      if (value !== undefined && value !== null && value !== '') {
+        if (Array.isArray(value)) {
+          value.forEach((item) => {
+            url.searchParams.append(key, item.toString());
           });
         } else {
-          url.searchParams.append(key, params[key].toString());
+          url.searchParams.append(key, value.toString());
         }
       }
     });
@@ -147,7 +150,7 @@ export async function searchProducts(
   query: string, 
   filters: FilterOptions = {}
 ): Promise<ApiResponse> {
-  const searchParams = {
+  const searchParams: APIParams = {
     search: query,
     ...filters
   };
@@ -160,8 +163,8 @@ export async function getProductsByCategories(categoryIds: string[]): Promise<Ap
 }
 
 // ✅ Utility function to build filter parameters
-export function buildFilterParams(filters: FilterOptions): Record<string, any> {
-  const params: Record<string, any> = {};
+export function buildFilterParams(filters: FilterOptions): APIParams {
+  const params: APIParams = {};
 
   if (filters.category) params.category = filters.category;
   if (filters.categories) params.categories = filters.categories;

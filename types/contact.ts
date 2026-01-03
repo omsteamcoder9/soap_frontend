@@ -25,8 +25,10 @@ export interface ApiResponse<T> {
   errors?: string[];
 }
 
-export interface ContactResponse extends ApiResponse<Contact> {}
-export interface ContactsResponse extends ApiResponse<{
+// Use type aliases instead of empty extending interfaces
+export type ContactResponse = ApiResponse<Contact>;
+
+export type ContactsResponse = ApiResponse<{
   data: Contact[];
   pagination: {
     page: number;
@@ -34,4 +36,4 @@ export interface ContactsResponse extends ApiResponse<{
     total: number;
     pages: number;
   };
-}> {}
+}>;

@@ -3,6 +3,7 @@
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from "next/image"
 
 export default function CartPage() {
   const { cart, updateCartItem, removeFromCart, clearCart, isGuest } = useCart();
@@ -78,11 +79,13 @@ export default function CartPage() {
                   <div key={item._id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border-b border-gray-200 pb-4 sm:pb-6">
                     {/* Product Image and Info - Mobile Layout */}
                     <div className="flex items-center gap-3 sm:gap-4">
-                      <img 
-                      src={`${process.env.NEXT_PUBLIC_BASE_URL}${item.product.images[0].image}`}
-                        alt={item.product.name}
-                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
-                      />
+                   <Image
+  src={`${process.env.NEXT_PUBLIC_BASE_URL}${item.product.images[0].image}`}
+  alt={item.product.name}
+  width={80}
+  height={80}
+  className="w-16 h-16 object-cover rounded-lg"
+/>
                       
                       {/* Product Info - Mobile Layout */}
                       <div className="sm:hidden flex-grow">

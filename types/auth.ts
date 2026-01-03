@@ -1,4 +1,3 @@
-
 export interface LoginData {
   email: string;
   password: string;
@@ -44,8 +43,8 @@ export interface AuthResponse {
   };
 }
 
-// API response wrapper for consistent structure
-export interface ApiResponse<T = any> {
+// Generic API response wrapper for consistent structure
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;

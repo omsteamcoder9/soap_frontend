@@ -69,9 +69,10 @@ export async function cancelOrder(orderId: string, token: string, cancellationRe
   try {
     console.log('🔄 Cancelling order:', orderId);
     
-    const cancelData: any = {};
+    // Using Partial to make all properties optional
+    const requestBody: Partial<{ cancellationReason: string }> = {};
     if (cancellationReason) {
-      cancelData.cancellationReason = cancellationReason;
+      requestBody.cancellationReason = cancellationReason;
     }
 
     const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
@@ -80,7 +81,7 @@ export async function cancelOrder(orderId: string, token: string, cancellationRe
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(cancelData),
+      body: JSON.stringify(requestBody),
       credentials: 'include'
     });
 
