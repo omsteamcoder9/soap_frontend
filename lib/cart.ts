@@ -1,4 +1,4 @@
-// src/lib/cart.ts
+// src/lib/cart.ts - Updated to support size
 import { Cart, AddToCartData, UpdateCartItemData } from '@/types/cart';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -59,16 +59,20 @@ export async function addToCart(cartData: AddToCartData): Promise<Cart> {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  console.log('📤 API: Adding to cart with data:', cartData); // Debug log
+
   const response = await fetch(`${API_BASE_URL}/cart`, {
     method: 'POST',
     headers,
     body: JSON.stringify(cartData),
-    credentials: 'include', // ✅ ADDED credentials
+    credentials: 'include',
   });
 
   await handleApiError(response, 'Failed to add item to cart');
   
-  return response.json();
+  const result = await response.json();
+  console.log('✅ API: Add to cart response:', result); // Debug log
+  return result;
 }
 
 export async function updateCartItem(itemId: string, updateData: UpdateCartItemData): Promise<Cart> {

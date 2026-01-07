@@ -9,9 +9,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const twitterHandle = process.env.NEXT_PUBLIC_TWITTER_HANDLE;
   
   return {
-    title: `Premium Organic Soaps & Natural Skincare | ${storeName} | 100% Natural`,
-    description: `Shop premium 100% organic soaps & skincare at ${storeName}. Handmade with natural ingredients, cruelty-free, and environmentally friendly. Free shipping available.`,
-    keywords: ['organic soap', 'natural soap', 'handmade soap', 'skincare', 'glow soaps',],
+    title: ` sastika Fashion and FancyFashion and Fancys & Natural Skincare | ${storeName} | 100% Natural`,
+    description: `Shop premium 100% organicFashion and Fancys & skincare at ${storeName}. Handmade with natural ingredients, cruelty-free, and environmentally friendly. Free shipping available.`,
+    keywords: ['organicFashion and Fancy', 'naturalFashion and Fancy', 'handmadeFashion and Fancy', 'skincare', 'glowFashion and Fancys',],
     robots: {
       index: true,
       follow: true,
@@ -26,15 +26,15 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: 'website',
       url: siteUrl,
-      title: `Soap | 100% Natural Skincare | ${storeName}`,
-      description: `Shop Soap at ${storeName}. 100% natural, handmade, cruelty-free.`,
+      title: `  Fashion and Fancy | 100% Natural Skincare | ${storeName}`,
+      description: `ShopFashion and Fancy at ${storeName}. 100% natural, handmade, cruelty-free.`,
       siteName: storeName,
       images: [
         {
           url: `${siteUrl}/og-homepage.jpg`,
           width: 1200,
           height: 630,
-          alt: `${storeName} - Soap`,
+          alt: `${storeName} -Fashion and Fancy`,
         },
       ],
       locale: 'en_IN',
@@ -43,8 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       site: twitterHandle,
       creator: twitterHandle,
-      title: `Soap | ${storeName}`,
-      description: `Shop Soap at ${storeName}`,
+      title: `  Fashion and Fancy | ${storeName}`,
+      description: `ShopFashion and Fancy at ${storeName}`,
       images: [`${siteUrl}/og-homepage.jpg`],
     },
     alternates: {
@@ -65,15 +65,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // ✅ Generate JSON-LD structured data
 function generateStructuredData() {
-  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'soap';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soapstore.com';
+  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || '  Fashion and Fancy';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://  Fashion and Fancystore.com';
   
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": storeName,
     "url": siteUrl,
-    "description": "Soap and skincare products",
+    "description": "  Fashion and Fancy and skincare products",
     "potentialAction": {
       "@type": "SearchAction",
       "target": `${siteUrl}/products?search={search_term_string}`,
@@ -116,7 +116,7 @@ export default async function HomePage() {
             "name": storeName,
             "url": siteUrl,
             "logo2": `${siteUrl}/logo2.png`,
-            "description": "Soap and skincare products",
+            "description": "  Fashion and Fancy and skincare products",
             "address": {
               "@type": "PostalAddress",
               "addressCountry": "IN"
@@ -136,11 +136,11 @@ export default async function HomePage() {
       />
 
       <div className="sr-only" aria-hidden="true">
-        <h2>{storeName} - Soap</h2>
-        <p>Shop 100% natural, handmade organic soaps and skincare products. Best quality skincare with free shipping across India.</p>
+        <h2>{storeName} -Fashion and Fancy</h2>
+        <p>Shop 100% natural, handmade organicFashion and Fancys and skincare products. Best quality skincare with free shipping across India.</p>
         <ul>
           {categories.map(category => (
-            <li key={category._id}>{category.name} Soap - Organic & Natural</li>
+            <li key={category._id}>{category.name}Fashion and Fancy - Organic & Natural</li>
           ))}
         </ul>
       </div>

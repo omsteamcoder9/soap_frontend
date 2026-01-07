@@ -46,11 +46,11 @@ export async function generateMetadata(props: ProductDetailPageProps): Promise<M
     // Keywords
     const keywords = product.metaKeywords || [
       product.name,
-      typeof product.category === 'object' ? product.category.name : 'organic soap',
+      typeof product.category === 'object' ? product.category.name : 'organicFashion and Fancy',
       'organic',
-      'natural soap',
-      'handmade soap',
-      'buy soap online',
+      'naturalFashion and Fancy',
+      'handmadeFashion and Fancy',
+      'buyFashion and Fancy online',
       storeName
     ];
 

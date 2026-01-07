@@ -11,6 +11,7 @@ import {
   createGuestOrder, 
   createUserOrder 
 } from '@/lib/payment-api';
+import { settingsAPI } from '@/lib/settings-api'; // ADD THIS
 
 declare global {
   interface Window {
@@ -99,6 +100,10 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [settings, setSettings] = useState<{ // ADD THIS STATE
+    razorpayEnabled: boolean;
+    cashOnDeliveryEnabled: boolean;
+  } | null>(null);
 
   // Auto-fill email if user is logged in
   useEffect(() => {
@@ -122,6 +127,30 @@ export default function CheckoutPage() {
       setAuthError('');
     }
   }, [user, token]);
+
+  // Fetch settings on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await settingsAPI.getPublicSettings();
+        if (response.success) {
+          setSettings({
+            razorpayEnabled: response.data.razorpayEnabled,
+            cashOnDeliveryEnabled: response.data.cashOnDeliveryEnabled
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error);
+        // Fallback if settings fail to load
+        setSettings({
+          razorpayEnabled: true,
+          cashOnDeliveryEnabled: true
+        });
+      }
+    };
+    
+    fetchSettings();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -209,7 +238,8 @@ export default function CheckoutPage() {
           const orderData = {
             products: cart.items.map(item => ({
               product: item.product._id,
-              quantity: item.quantity
+              quantity: item.quantity,
+              selectedSize: item.selectedSize
             })),
             shippingAddress: shippingAddress,
             paymentMethod: 'razorpay' as const
@@ -224,7 +254,8 @@ export default function CheckoutPage() {
           const orderData = {
             products: cart.items.map(item => ({
               product: item.product._id,
-              quantity: item.quantity
+              quantity: item.quantity,
+               selectedSize: item.selectedSize
             })),
             shippingAddress: shippingAddress,
             guestUser: {
@@ -260,7 +291,7 @@ export default function CheckoutPage() {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency || 'INR',
-          name: 'soap',
+          name: 'Sastika Fashion and Fancy',
           description: 'Order Payment',
           image: '/logo2.png',
           order_id: razorpayOrder.id,
@@ -314,7 +345,7 @@ export default function CheckoutPage() {
             address: formData.address,
           },
           theme: {
-            color: '#6B7280',
+            color: '#D4AF37', // Changed from '#6B7280'
           },
           modal: {
             ondismiss: function() {
@@ -404,7 +435,8 @@ export default function CheckoutPage() {
         const orderData = {
           products: cart.items.map(item => ({
             product: item.product._id,
-            quantity: item.quantity
+            quantity: item.quantity, 
+            selectedSize: item.selectedSize
           })),
           shippingAddress: shippingAddress,
           paymentMethod: 'cod' as const
@@ -417,7 +449,8 @@ export default function CheckoutPage() {
         const orderData = {
           products: cart.items.map(item => ({
             product: item.product._id,
-            quantity: item.quantity
+            quantity: item.quantity,
+             selectedSize: item.selectedSize
           })),
           shippingAddress: shippingAddress,
           guestUser: {
@@ -464,13 +497,13 @@ export default function CheckoutPage() {
     }
   };
 
-  // Show loading if cart is empty (will redirect)
-  if (cart.items.length === 0) {
+  // Show loading if cart is empty OR settings not loaded
+  if (!settings || cart.items.length === 0) {
     return (
       <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading payment options...</p>
         </div>
       </div>
     );
@@ -679,11 +712,11 @@ export default function CheckoutPage() {
             <div className="bg-[#f2f2f2] rounded-lg shadow-sm sm:shadow-md p-4 sm:p-6 border border-gray-300">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">Special Offer</h2>
               <p className="text-gray-700 mb-4">
-                Get <span className="font-bold text-green-600">20% OFF</span> soap!
+                Get <span className="font-bold text-[#D4AF37]">20% OFF</span> Fashion!
               </p>
               <Link
                 href="/products"
-                className="w-full bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-900 hover:to-gray-800 text-white py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center text-sm sm:text-base shadow-md hover:shadow-lg hover:shadow-gray-900/25"
+                className="w-full bg-gradient-to-r from-[#D4AF37] to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center text-sm sm:text-base shadow-md hover:shadow-lg hover:shadow-yellow-900/25"
               >
                 View Offers Products
               </Link>
@@ -722,45 +755,59 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-base sm:text-lg font-semibold border-t pt-2">
                   <span>Total</span>
-                  <span className="text-gray-800">₹{total.toFixed(2)}</span>
+                  <span className="text-[#D4AF37]">₹{total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Payment Methods */}
+            {/* Payment Methods - ONLY CHANGE IS HERE */}
             <div className="bg-white rounded-lg shadow-sm sm:shadow-md p-4 sm:p-6 border border-gray-300">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Payment Method</h2>
               
               <div className="space-y-4">
-                <button
-                  onClick={handleRazorpayPayment}
-                  disabled={paymentLoading || loading || !!authError}
-                  className="w-full bg-gradient-to-r from-gray-800 to-gray-700 text-white py-3 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-gray-900/25 cursor-pointer text-sm sm:text-base"
-                >
-                  {paymentLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    `Pay ₹${total.toFixed(2)}`
-                  )}
-                </button>
+                {/* Razorpay button - ONLY show if enabled */}
+                {settings.razorpayEnabled && (
+                  <button
+                    onClick={handleRazorpayPayment}
+                    disabled={paymentLoading || loading || !!authError}
+                    className="w-full bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-yellow-900/25 cursor-pointer text-sm sm:text-base"
+                  >
+                    {paymentLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      `Pay ₹${total.toFixed(2)}`
+                    )}
+                  </button>
+                )}
 
-                <button
-                  onClick={handleCashOnDelivery}
-                  disabled={loading || paymentLoading || !!authError}
-                  className="w-full border border-gray-700 text-gray-700 py-3 rounded-lg hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center hover:shadow-lg text-sm sm:text-base"
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-gray-700 mr-2"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    'Cash on Delivery'
-                  )}
-                </button>
+                {/* COD button - ONLY show if enabled */}
+                {settings.cashOnDeliveryEnabled && (
+                  <button
+                    onClick={handleCashOnDelivery}
+                    disabled={loading || paymentLoading || !!authError}
+                    className="w-full border border-[#D4AF37] text-[#D4AF37] py-3 rounded-lg hover:bg-gradient-to-r hover:from-[#D4AF37] hover:to-yellow-600 hover:text-white transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center hover:shadow-lg text-sm sm:text-base"
+                  >
+                    {loading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-[#D4AF37] mr-2"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      'Cash on Delivery'
+                    )}
+                  </button>
+                )}
+
+                {/* Show message if no payment methods are enabled */}
+                {!settings.razorpayEnabled && !settings.cashOnDeliveryEnabled && (
+                  <div className="text-center py-4">
+                    <p className="text-gray-600">No payment methods are currently available.</p>
+                    <p className="text-sm text-gray-500 mt-1">Please contact support.</p>
+                  </div>
+                )}
               </div>
 
               {/* User Status */}

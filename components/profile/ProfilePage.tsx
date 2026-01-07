@@ -186,7 +186,7 @@ export default function UserProfile() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const pdfEndpoint = `${apiUrl}/orders/${orderId}/receipt/pdf`;
       
       const response = await fetch(pdfEndpoint, {
@@ -269,7 +269,7 @@ export default function UserProfile() {
         <div className="container mx-auto px-4">
           <div className="flex justify-center items-center py-12">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37] mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading your orders...</p>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function UserProfile() {
             <div className="text-red-600 mb-4 font-medium">{error}</div>
             <button 
               onClick={() => window.location.reload()}
-              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-3 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium"
+              className="bg-gradient-to-r from-[#D4AF37] to-[#C9A227] text-white px-6 py-3 rounded-lg hover:from-[#C9A227] hover:to-[#B7951F] transition-all duration-200 font-medium"
             >
               Try Again
             </button>
@@ -308,8 +308,8 @@ export default function UserProfile() {
         {activeOrders.length === 0 && cancelledOrders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center border border-gray-300">
             <div className="max-w-md mx-auto">
-              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-200">
-                <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-20 h-20 bg-[#FFF8E1] rounded-full flex items-center justify-center mx-auto mb-6 border border-[#D4AF37]">
+                <svg className="w-10 h-10 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
@@ -317,7 +317,7 @@ export default function UserProfile() {
               <p className="text-gray-600 mb-6">Start shopping to see your orders here</p>
               <button
                 onClick={() => router.push('/products')}
-                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-3 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium"
+                className="bg-gradient-to-r from-[#D4AF37] to-[#C9A227] text-white px-6 py-3 rounded-lg hover:from-[#C9A227] hover:to-[#B7951F] transition-all duration-200 font-medium"
               >
                 Start Shopping
               </button>
@@ -346,7 +346,7 @@ export default function UserProfile() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Total Spent</span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-[#D4AF37]">
                         ₹{orders.reduce((total, order) => total + order.totalAmount, 0).toFixed(2)}
                       </span>
                     </div>
@@ -372,7 +372,7 @@ export default function UserProfile() {
                       onClick={() => router.push('/products')}
                       className="w-full px-4 py-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 font-medium transition-colors text-left flex items-center gap-3 border border-gray-300"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                       Continue Shopping
@@ -411,7 +411,7 @@ export default function UserProfile() {
                 {activeOrders.length === 0 ? (
                   <div className="p-8 text-center">
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-8 h-8 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
@@ -419,7 +419,7 @@ export default function UserProfile() {
                     <p className="text-gray-600 mb-4">All your current orders are completed or cancelled</p>
                     <button
                       onClick={() => router.push('/products')}
-                      className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-2 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium"
+                      className="bg-gradient-to-r from-[#D4AF37] to-[#C9A227] text-white px-6 py-2 rounded-lg hover:from-[#C9A227] hover:to-[#B7951F] transition-all duration-200 font-medium"
                     >
                       Start Shopping
                     </button>
@@ -430,7 +430,7 @@ export default function UserProfile() {
                       <div
                         key={order._id}
                         className={`p-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group ${
-                          selectedOrder?._id === order._id ? 'bg-gray-100 border-l-4 border-l-gray-700' : ''
+                          selectedOrder?._id === order._id ? 'bg-gray-100 border-l-4 border-l-[#D4AF37]' : ''
                         }`}
                         onClick={() => fetchOrderDetails(order._id)}
                       >
@@ -454,11 +454,11 @@ export default function UserProfile() {
                             
                             <div className="flex flex-wrap items-center gap-3 text-sm">
                               <span className="text-gray-600">{order.products?.length || 0} items</span>
-                              <span className="text-gray-400">•</span>
+                              <span className="text-[#D4AF37]">•</span>
                               <span className="font-semibold text-gray-900">
                                 ₹{order.totalAmount.toFixed(2)}
                               </span>
-                              <span className="text-gray-400">•</span>
+                              <span className="text-[#D4AF37]">•</span>
                               <span className="text-gray-600 capitalize">{order.paymentMethod}</span>
                             </div>
 
@@ -572,7 +572,7 @@ export default function UserProfile() {
                   value={cancellationReason}
                   onChange={(e) => setCancellationReason(e.target.value)}
                   placeholder="Please provide a reason for cancellation..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent transition-all duration-200"
                   rows={3}
                 />
               </div>
@@ -592,7 +592,7 @@ export default function UserProfile() {
                 <button
                   onClick={confirmCancelOrder}
                   disabled={cancellingOrderId !== null}
-                  className="px-4 py-2 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#C9A227] text-white rounded-lg hover:from-[#C9A227] hover:to-[#B7951F] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {cancellingOrderId ? (
                     <>
@@ -619,7 +619,7 @@ export default function UserProfile() {
                   <a
                     href={pdfUrl}
                     download={`receipt-${selectedOrder?.orderId || selectedOrder?._id?.slice(-8)}.pdf`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium text-sm"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C9A227] transition-colors font-medium text-sm"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -641,7 +641,7 @@ export default function UserProfile() {
                 {pdfLoading ? (
                   <div className="flex items-center justify-center h-96">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto"></div>
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37] mx-auto"></div>
                       <p className="mt-4 text-gray-600">Loading PDF...</p>
                     </div>
                   </div>
@@ -691,7 +691,7 @@ export default function UserProfile() {
                 {cancelledOrders.length === 0 ? (
                   <div className="p-8 text-center">
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-8 h-8 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
@@ -727,13 +727,13 @@ export default function UserProfile() {
                             
                             <div className="flex flex-wrap items-center gap-3 text-sm">
                               <span className="text-gray-600">{order.products?.length || 0} items</span>
-                              <span className="text-gray-400">•</span>
+                              <span className="text-[#D4AF37]">•</span>
                               <span className="font-semibold text-gray-900">
                                 ₹{order.totalAmount.toFixed(2)}
                               </span>
-                              <span className="text-gray-400">•</span>
+                              <span className="text-[#D4AF37]">•</span>
                               <span className="text-gray-600 capitalize">{order.paymentMethod}</span>
-                              <span className="text-gray-400">•</span>
+                              <span className="text-[#D4AF37]">•</span>
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation();

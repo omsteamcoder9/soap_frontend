@@ -18,7 +18,7 @@ export default function CategoryFilter({ categories, selectedCategory }: Categor
           href="/products"
           className={`px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
             !selectedCategory
-              ? 'bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg hover:shadow-gray-500/25'
+              ? 'bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white shadow-lg hover:shadow-yellow-500/25'
               : 'bg-[#f2f2f2] text-gray-700 hover:bg-gray-200 hover:text-gray-900 hover:shadow-md border border-gray-300'
           }`}
         >
@@ -31,7 +31,7 @@ export default function CategoryFilter({ categories, selectedCategory }: Categor
             href={`/products?category=${category._id}`}
             className={`px-4 py-2 rounded-full font-medium transition-all duration-300 cursor-pointer ${
               selectedCategory === category._id
-                ? 'bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg hover:shadow-gray-500/25'
+                ? 'bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white shadow-lg hover:shadow-yellow-500/25'
                 : 'bg-[#f2f2f2] text-gray-700 hover:bg-gray-200 hover:text-gray-900 hover:shadow-md border border-gray-300'
             }`}
           >

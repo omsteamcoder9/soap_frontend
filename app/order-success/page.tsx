@@ -74,7 +74,7 @@ export default function OrderSuccessPage() {
       <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center bg-white rounded-lg shadow-md p-8 border border-gray-300">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37] mx-auto mb-4"></div>
             <p className="text-gray-600">Loading order details...</p>
           </div>
         </div>
@@ -103,13 +103,13 @@ export default function OrderSuccessPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href="/"
-                className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-3 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium text-center shadow-md hover:shadow-lg hover:shadow-gray-900/25"
+                className="bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white px-6 py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 font-medium text-center shadow-md hover:shadow-lg hover:shadow-yellow-900/25"
               >
                 Return to Home
               </Link>
               <Link 
                 href="/cart"
-                className="border border-gray-800 text-gray-800 px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white transition-all duration-200 font-medium text-center"
+                className="border border-[#D4AF37] text-[#D4AF37] px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-[#D4AF37] hover:to-yellow-600 hover:text-white transition-all duration-200 font-medium text-center"
               >
                 Back to Cart
               </Link>
@@ -125,8 +125,8 @@ export default function OrderSuccessPage() {
     <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-2xl mx-auto text-center bg-white rounded-lg shadow-md p-8 border border-gray-300">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-200">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#D4AF37]/20">
+            <svg className="w-8 h-8 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
@@ -137,15 +137,15 @@ export default function OrderSuccessPage() {
             Thank you for your purchase. Your order has been confirmed and will be shipped soon.
           </p>
           <p className="text-gray-600 mb-6">
-            Order ID: <span className="font-mono font-semibold">#{orderId}</span>
+            Order ID: <span className="font-mono font-semibold text-[#D4AF37]">#{orderId}</span>
           </p>
 
           <div className="space-y-4 mb-8">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-800 text-sm">
+            <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-lg p-4">
+              <p className="text-gray-800 text-sm">
                 You will receive an order confirmation email shortly with all the details.
               </p>
-              <p className="text-gray-700 text-sm mt-2 font-medium">
+              <p className="text-[#D4AF37] text-sm mt-2 font-medium">
                 {countdown > 0 ? `Redirecting to home page in ${countdown} seconds...` : 'Redirecting now...'}
               </p>
             </div>
@@ -154,13 +154,13 @@ export default function OrderSuccessPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/products"
-              className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-6 py-3 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium text-center shadow-md hover:shadow-lg hover:shadow-gray-900/25"
+              className="bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white px-6 py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 font-medium text-center shadow-md hover:shadow-lg hover:shadow-yellow-900/25"
             >
               Continue Shopping
             </Link>
             <Link 
               href="/"
-              className="border border-gray-800 text-gray-800 px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white transition-all duration-200 font-medium text-center"
+              className="border border-[#D4AF37] text-[#D4AF37] px-6 py-3 rounded-lg hover:bg-gradient-to-r hover:from-[#D4AF37] hover:to-yellow-600 hover:text-white transition-all duration-200 font-medium text-center"
               onClick={(e) => {
                 e.preventDefault();
                 router.push('/');

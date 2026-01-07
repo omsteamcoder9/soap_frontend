@@ -7,7 +7,7 @@ export default function ContactInfo() {
         </svg>
       ),
       title: 'Email',
-      details: 'support@soap.com',
+      details: 'support@  Fashion and Fancy.com',
       description: 'Send us an email anytime'
     },
     {
@@ -28,8 +28,8 @@ export default function ContactInfo() {
         </svg>
       ),
       title: 'Office',
-      details: '123 soap Street',
-      description: 'Reading Corner, soapville 10001'
+      details: '123Fashion and Fancy Street',
+      description: 'Reading Corner,Fashion and Fancyville 10001'
     }
   ];
 
@@ -37,7 +37,7 @@ export default function ContactInfo() {
     <div className="bg-[#f2f2f2] rounded-lg p-8 border border-gray-300">
       <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
       <p className="text-gray-700 mb-8">
-        We&apos;re here to help and answer any questions you might have about our soaps, orders, or services. We look forward to hearing from you.
+        We&apos;re here to help and answer any questions you might have about ourFashion and Fancys, orders, or services. We look forward to hearing from you.
       </p>
       
       <div className="space-y-6">
@@ -79,10 +79,10 @@ export default function ContactInfo() {
       <div className="mt-8 pt-8 border-t border-gray-300">
         <h4 className="font-semibold text-gray-900 mb-4">Visit Our Store</h4>
         <p className="text-gray-700 mb-2">
-          Come browse our physical collection at our flagship store in soapville.
+          Come browse our physical collection at our flagship store inFashion and Fancyville.
         </p>
         <p className="text-sm text-gray-600">
-          Free parking available • Wheelchair accessible • soap reading events every Saturday
+          Free parking available • Wheelchair accessible •Fashion and Fancy reading events every Saturday
         </p>
       </div>
     </div>

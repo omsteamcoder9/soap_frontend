@@ -178,7 +178,7 @@ export default function ContactForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-gradient-to-r from-gray-800 to-gray-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-gray-900 hover:to-gray-800 focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="w-full bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-yellow-600 hover:to-yellow-700 focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">

@@ -1,7 +1,7 @@
-// CartContext.tsx - Fix the isGuest logic
+// CartContext.tsx - Fixed with size parameter
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'; // <-- CHANGED: Added useCallback import
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Product } from '@/types/product';
 import { Cart, CartItem } from '@/types/cart';
 import * as cartAPI from '@/lib/cart';
@@ -12,7 +12,7 @@ interface CartContextType {
   loading: boolean;
   addingProductId: string | null;
   isGuest: boolean;
-  addToCart: (product: Product, quantity: number) => Promise<void>;
+  addToCart: (product: Product, quantity: number, size?: string) => Promise<void>; // ✅ Added size parameter
   updateCartItem: (itemId: string, quantity: number) => Promise<void>;
   removeFromCart: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -49,7 +49,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const { user, loading: authLoading } = useAuth();
 
-  // ✅ FIX: Properly determine if user is guest (check both user and token)
   const isGuest = !user;
 
   console.log('🛒 CartProvider state:', { 
@@ -58,7 +57,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     authLoading 
   });
 
-  // Load guest cart from localStorage on initial load
   useEffect(() => {
     if (isGuest && !authLoading) {
       console.log('🛒 Loading guest cart on mount');
@@ -95,7 +93,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   };
 
-  // CHANGED: Wrapped refreshCart in useCallback
   const refreshCart = useCallback(async () => {
     console.log('🔄 refreshCart called, isGuest:', isGuest, 'authLoading:', authLoading);
     
@@ -106,13 +103,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
     try {
       if (!isGuest && user) {
-        // ✅ User is authenticated - fetch from API
         console.log('🔄 Fetching user cart via API');
         const cartData = await cartAPI.getCart();
         setCart(cartData);
         console.log('🛒 Loaded user cart from API:', cartData);
       } else {
-        // ✅ User is guest - load from localStorage
         console.log('🔄 Loading guest cart (user is guest)');
         loadGuestCart();
       }
@@ -123,44 +118,45 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         loadGuestCart();
       }
     }
-  }, [isGuest, authLoading, user]); // <-- CHANGED: Added dependencies for useCallback
+  }, [isGuest, authLoading, user]);
 
-  // Refresh cart when auth state changes
   useEffect(() => {
     console.log('🔄 Auth state changed, refreshing cart');
     refreshCart();
-  }, [user, authLoading, refreshCart]); // <-- CHANGED: Added refreshCart as dependency
+  }, [user, authLoading, refreshCart]);
 
-  // ✅ FIXED: Guest cart functions
-  const handleGuestAddToCart = (product: Product, quantity: number): Cart => {
-    console.log('🛒 handleGuestAddToCart called for product:', product._id);
+  // ✅ FIXED: Guest cart function with size parameter
+  const handleGuestAddToCart = (product: Product, quantity: number, size?: string): Cart => {
+    console.log('🛒 handleGuestAddToCart called for product:', product._id, 'size:', size);
     
     const guestCart = { 
       ...cart,
       items: cart.items ? [...cart.items] : []
     };
     
+    // ✅ FIXED: Check for same product AND same size
     const existingItemIndex = guestCart.items.findIndex(
-      item => item && item.product && item.product._id === product._id
+      item => item && item.product && item.product._id === product._id && item.selectedSize === size
     );
     
     if (existingItemIndex > -1) {
       guestCart.items[existingItemIndex].quantity += quantity;
       guestCart.items[existingItemIndex].updatedAt = new Date().toISOString();
-      console.log('🛒 Updated existing item');
+      console.log('🛒 Updated existing item with same size');
     } else {
       const guestItemId = `guest-${product._id}-${Date.now()}`;
       
-      const newItem: CartItem = {
+      const newItem: CartItem & { selectedSize?: string } = {
         _id: guestItemId,
         product,
         quantity,
         price: product.price,
+        selectedSize: size, // ✅ Save the size
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       guestCart.items.push(newItem);
-      console.log('🛒 Added new item');
+      console.log('🛒 Added new item with size:', size);
     }
     
     // Recalculate totals
@@ -222,23 +218,24 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     return emptyCart;
   };
 
-  // ✅ FIXED: addToCart function with proper guest detection
-  const addToCart = async (product: Product, quantity: number) => {
-    console.log('🛒 addToCart called, isGuest:', isGuest);
+  // ✅ FIXED: addToCart function with size parameter
+  const addToCart = async (product: Product, quantity: number, size?: string) => {
+    console.log('🛒 addToCart called, isGuest:', isGuest, 'size:', size);
     
     try {
       setAddingProductId(product._id);
       setLoading(true);
       
       if (isGuest) {
-        console.log('🛒 Using guest cart handler');
-        const updatedCart = handleGuestAddToCart(product, quantity);
+        console.log('🛒 Using guest cart handler with size:', size);
+        const updatedCart = handleGuestAddToCart(product, quantity, size);
         setCart(updatedCart);
       } else {
-        console.log('🛒 Using API cart handler');
+        console.log('🛒 Using API cart handler with size:', size);
         const updatedCart = await cartAPI.addToCart({
           productId: product._id,
-          quantity
+          quantity,
+          size // ✅ Pass size to API
         });
         setCart(updatedCart);
       }

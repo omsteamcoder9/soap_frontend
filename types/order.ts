@@ -1,4 +1,4 @@
-// types/order.ts - UPDATED WITH COLOR FIELD
+// types/order.ts - UPDATED WITH PROPER selectedSize
 export interface OrderItem {
   product: {
     _id: string;
@@ -9,20 +9,15 @@ export interface OrderItem {
   quantity: number;
   price: number;
   name?: string; // Backend includes name
-  selectedSize?: string; // ✅ ADDED: Selected size field
-  // ✅ ADDED: Selected color field
-  selectedColor?: {
-    name?: string;
-    code?: string;
-  };
+  selectedSize?: string; // ✅ CORRECT: This should be a STRING
 }
 
 export interface Order {
   _id: string;
-  orderId: string; // Backend uses 'orderId' not 'orderNumber'
+  orderId: string;
   receipt?: string;
   user: string;
-  products: OrderItem[]; // Backend uses 'products' not 'items'
+  products: OrderItem[];
   totalAmount: number;
   shippingAddress: {
     firstName: string;
@@ -35,7 +30,7 @@ export interface Order {
     pincode: string;
   };
   paymentMethod: string;
-  paymentStatus: 'pending' | 'completed' | 'failed'; // Backend uses 'completed' not 'paid'
+  paymentStatus: 'pending' | 'completed' | 'failed';
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   shippingFee?: number;
   taxAmount?: number;
@@ -46,12 +41,12 @@ export interface Order {
 
 export interface OrdersResponse {
   success: boolean;
-  orders: Order[]; // Backend returns 'orders' not 'data'
+  orders: Order[];
   message?: string;
 }
 
 export interface OrderResponse {
   success: boolean;
-  order: Order; // Backend returns 'order' not 'data'
+  order: Order;
   message?: string;
 }

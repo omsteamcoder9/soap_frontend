@@ -91,7 +91,7 @@ export default function FilterDropdown<T>({
           compact ? 'px-2 py-1 text-xs' : ''
         } ${
           isActive
-            ? 'bg-gradient-to-r from-gray-800 to-gray-900 text-white border-transparent shadow-lg hover:shadow-gray-500/25'
+            ? 'bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white border-transparent shadow-lg hover:shadow-yellow-500/25'
             : 'bg-[#f2f2f2] text-gray-700 border-gray-300 hover:border-gray-500 hover:text-gray-900'
         }`}
       >
@@ -123,7 +123,7 @@ export default function FilterDropdown<T>({
                 onClick={() => handleSelect(option.value)}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-200 transition-all duration-200 ${
                   isSelected
-                    ? 'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-900 hover:to-gray-950'
+                    ? 'bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700'
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >

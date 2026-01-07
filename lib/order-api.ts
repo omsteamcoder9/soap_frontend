@@ -24,9 +24,13 @@ export async function getUserOrders(token: string): Promise<Order[]> {
     }
 
     const data: OrdersResponse = await response.json();
-    console.log('✅ Backend response:', data);
     
-    // FIX: Use 'orders' instead of 'data'
+    // ✅ ADD THIS DEBUG LOG TO SEE IF selectedSize EXISTS
+    console.log('🔍 Order data sample (first product):', 
+      data.orders?.[0]?.products?.[0]?.selectedSize || 'NO SIZE FOUND'
+    );
+    console.log('📊 Full first product:', JSON.stringify(data.orders?.[0]?.products?.[0], null, 2));
+    
     return data.orders || [];
   } catch (error) {
     console.error('❌ Error fetching orders:', error);

@@ -49,7 +49,7 @@ export default function ProductFilters({ categories, filters, onFiltersChange }:
       <div className="lg:hidden mb-4">
         <button
           onClick={() => setIsMobileFiltersOpen(true)}
-          className="w-full py-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-gray-500/25 transition-all duration-200 cursor-pointer"
+          className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-yellow-500/25 transition-all duration-200 cursor-pointer"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />

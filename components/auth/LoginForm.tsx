@@ -38,11 +38,11 @@ export default function LoginPage() {
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md border border-gray-200 p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <span className="text-white font-bold text-xl">ES</span>
+            <div className="w-16 h-16 bg-[#D4AF37] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <span className="text-white font-bold text-xl">S</span>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your soap account</p>
+            <p className="text-gray-600">Sign in to yourFashion and Fancy account</p>
           </div>
           
           <form onSubmit={handleLogin}>
@@ -90,7 +90,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium shadow-lg hover:shadow-gray-900/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full bg-[#D4AF37] text-white py-3 rounded-lg hover:bg-yellow-600 transition-all duration-200 font-medium shadow-lg hover:shadow-yellow-900/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               suppressHydrationWarning
             >
               {loading ? (

@@ -1,4 +1,12 @@
 // types/product.ts
+
+// ✅ ADDED: Size interface
+export interface ProductSize {
+  size: string; // e.g., "S", "M", "L", "XL"
+  stock: number;
+  _id?: string;
+}
+
 export interface ProductImage {
   image: string;
   _id: string;
@@ -37,8 +45,11 @@ export interface Product {
   stock: number;
   numberOfReviews: number;
   
-  // ✅ ADDED: Color variants
+  // ✅ OPTIONAL: Color variants
   colors?: ProductColor[];
+  
+  // ✅ OPTIONAL: Size options for clothing
+  sizes?: ProductSize[];
   
   // ✅ ADDED: Specifications
   specifications?: ProductSpecification[];
@@ -85,6 +96,8 @@ export interface FilterOptions {
   maxPrice?: number;
   // ✅ UPDATED: Color filtering
   colors?: string[];
+  // ✅ ADDED: Size filtering
+  sizes?: string[];
   featured?: boolean;
   status?: string;
   search?: string;
@@ -135,6 +148,8 @@ export interface CreateProductData {
   seller: string;
   stock?: number;
   colors?: ProductColor[];
+  // ✅ ADDED: Sizes for product creation
+  sizes?: ProductSize[];
   specifications?: ProductSpecification[];
   images?: File[];
   slug?: string;
@@ -163,15 +178,22 @@ export interface ColorFilterOption {
   count: number;
 }
 
+// ✅ ADDED: Size filter option for frontend
+export interface SizeFilterOption {
+  size: string;
+  count: number;
+}
+
 // ✅ ADDED: Product detail response
 export interface ProductDetailResponse {
   success: boolean;
   data: Product;
 }
 
-// ✅ UPDATED: Cart product interface with selected color
-export interface CartProduct extends Omit<Product, 'colors'> {
+// ✅ UPDATED: Cart product interface with selected color and size
+export interface CartProduct extends Omit<Product, 'colors' | 'sizes'> {
   selectedColor?: ProductColor;
+  selectedSize?: string; // Store selected size as string (e.g., "S", "M", "L")
   quantity: number;
 }
 
@@ -186,4 +208,22 @@ export interface CreateProductResponse {
   success: boolean;
   message: string;
   data: Product;
+}
+
+// ✅ ADDED: Interface for size selection in UI
+export interface SizeSelection {
+  size: string;
+  stock: number;
+  available: boolean;
+}
+
+// ✅ ADDED: Interface for cart item with size
+export interface CartItem {
+  productId: string;
+  product: Product;
+  quantity: number;
+  selectedColor?: ProductColor;
+  selectedSize?: string;
+  price: number;
+  total: number;
 }

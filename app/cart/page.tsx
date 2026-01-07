@@ -31,7 +31,7 @@ export default function CartPage() {
             <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Add some products to your cart to see them here.</p>
             <Link 
               href="/products"
-              className="inline-block bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium text-sm sm:text-base shadow-lg hover:shadow-gray-500/25"
+              className="inline-block bg-[#D4AF37] text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-all duration-200 font-medium text-sm sm:text-base shadow-lg hover:shadow-yellow-500/25"
             >
               Continue Shopping
             </Link>
@@ -178,13 +178,13 @@ export default function CartPage() {
                 </div>
                 <div className="border-t pt-2 sm:pt-3 flex justify-between text-base sm:text-lg font-semibold">
                   <span>Total</span>
-                  <span className="text-gray-700">₹{total.toFixed(2)}</span>
+                  <span className="text-[#D4AF37]">₹{total.toFixed(2)}</span>
                 </div>
               </div>
 
               <button 
                 onClick={handleCheckout}
-                className="w-full bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium mb-3 sm:mb-4 text-sm sm:text-base shadow-lg hover:shadow-gray-500/25 cursor-pointer"
+                className="w-full bg-[#D4AF37] text-white py-3 rounded-lg hover:bg-yellow-600 transition-all duration-200 font-medium mb-3 sm:mb-4 text-sm sm:text-base shadow-lg hover:shadow-yellow-500/25 cursor-pointer"
               >
                 Proceed to Checkout
               </button>
@@ -195,13 +195,13 @@ export default function CartPage() {
                   <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
                     <Link 
                       href="/login"
-                      className="bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium text-center text-xs sm:text-sm shadow-lg hover:shadow-gray-500/25"
+                      className="bg-[#D4AF37] text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-all duration-200 font-medium text-center text-xs sm:text-sm shadow-lg hover:shadow-yellow-500/25"
                     >
                       Login
                     </Link>
                     <Link 
                       href="/signup"
-                      className="border border-gray-600 text-gray-600 py-2 px-4 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 font-medium text-center text-xs sm:text-sm"
+                      className="border border-[#D4AF37] text-[#D4AF37] py-2 px-4 rounded-lg hover:bg-[#D4AF37] hover:text-white transition-all duration-200 font-medium text-center text-xs sm:text-sm"
                     >
                       Sign Up
                     </Link>
@@ -211,7 +211,7 @@ export default function CartPage() {
               
               <Link 
                 href="/products"
-                className="w-full border border-gray-600 text-gray-600 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 font-medium text-center block text-sm sm:text-base"
+                className="w-full border border-[#D4AF37] text-[#D4AF37] py-3 rounded-lg hover:bg-[#D4AF37] hover:text-white transition-all duration-200 font-medium text-center block text-sm sm:text-base"
               >
                 Continue Shopping
               </Link>

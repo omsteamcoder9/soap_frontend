@@ -10,10 +10,10 @@ import Footer from '@/components/ui/Footer'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'soap',
+  title: '  Fashion and Fancy',
   description: 'Your one-stop shop for eco-friendly products',
   icons: {
-    icon: "images/logot.png",
+    icon: "images/v1.png",
   },
 }
 

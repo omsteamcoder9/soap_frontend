@@ -20,18 +20,18 @@ export async function generateMetadata(props: ProductsPageProps) {
   const storeDescription = process.env.NEXT_PUBLIC_SITE_DESCRIPTION;
   const twitterHandle = process.env.NEXT_PUBLIC_TWITTER_HANDLE ;
   
-  let title = `Soap | Buy at Best Price | ${storeName}`;
-  let description = `Browse our collection of 100% natural & organic soaps. ${storeDescription} Free shipping & money-back guarantee. Shop now!`;
-  let keywords = `organic soap, natural soap, handmade soap, buy soap online, soap store, ${storeName}`;
+  let title = `  Fashion and Fancy | Buy at Best Price | ${storeName}`;
+  let description = `Browse our collection of 100% natural & organicFashion and Fancys. ${storeDescription} Free shipping & money-back guarantee. Shop now!`;
+  let keywords = `organicFashion and Fancy, naturalFashion and Fancy, handmadeFashion and Fancy, buyFashion and Fancy online,Fashion and Fancy store, ${storeName}`;
   let canonicalUrl = `${siteUrl}/products`;
   
   if (categorySlug) {
     try {
       const category = await getCategoryBySlug(categorySlug);
       if (category) {
-        title = `${category.name} | Premium Organic Soap | ${storeName}`;
-        description = `Shop 100% organic ${category.name.toLowerCase()} soaps. Natural ingredients, handmade with care. Best prices at ${storeName}. Free shipping available.`;
-        keywords = `${category.name} soap, organic ${category.name.toLowerCase()}, natural ${category.name.toLowerCase()}, buy ${category.name.toLowerCase()} soap, ${storeName}`;
+        title = `${category.name} |  sastika Fashion and FancyFashion and Fancy | ${storeName}`;
+        description = `Shop 100% organic ${category.name.toLowerCase()}Fashion and Fancys. Natural ingredients, handmade with care. Best prices at ${storeName}. Free shipping available.`;
+        keywords = `${category.name}Fashion and Fancy, organic ${category.name.toLowerCase()}, natural ${category.name.toLowerCase()}, buy ${category.name.toLowerCase()}Fashion and Fancy, ${storeName}`;
         canonicalUrl = `${siteUrl}/products?category=${categorySlug}`;
       }
     } catch (error) {
@@ -41,11 +41,11 @@ export async function generateMetadata(props: ProductsPageProps) {
   
   if (page > 1) {
     title = `${title} - Page ${page}`;
-    description = `${description} Page ${page} of our organic soap collection.`;
+    description = `${description} Page ${page} of our organicFashion and Fancy collection.`;
     canonicalUrl = `${canonicalUrl}${categorySlug ? `?category=${categorySlug}&` : '?'}page=${page}`;
   }
 
-  const ogImage = `${siteUrl}/og-organic-soaps.jpg`;
+  const ogImage = `${siteUrl}/og-organic-  Fashion and Fancys.jpg`;
   
   // Structured Data for Product Listing
   const structuredData = {
@@ -129,7 +129,7 @@ export default async function ProductsPage(props: ProductsPageProps) {
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Organic Soaps",
+        "name": "OrganicFashion and Fancys",
         "item": `${siteUrl}/products`
       }
     ]
@@ -141,7 +141,7 @@ export default async function ProductsPage(props: ProductsPageProps) {
     "@type": "WebSite",
     "name": storeName,
     "url": siteUrl,
-    "description": process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Soap',
+    "description": process.env.NEXT_PUBLIC_SITE_DESCRIPTION || '  Fashion and Fancy',
     "potentialAction": {
       "@type": "SearchAction",
       "target": `${siteUrl}/products?search={search_term_string}`,
@@ -171,7 +171,7 @@ export default async function ProductsPage(props: ProductsPageProps) {
         <section className="py-12">
           <div className="container mx-auto px-4">
             {/* SEO-friendly heading */}
-            <h1 className="sr-only">Premium Organic Soap Collection - {storeName}</h1>
+            <h1 className="sr-only"> sastika Fashion and FancyFashion and Fancy Collection - {storeName}</h1>
             
          
 

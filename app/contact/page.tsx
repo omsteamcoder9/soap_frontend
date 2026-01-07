@@ -4,13 +4,13 @@ import ContactInfo from '@/components/ContactInfo';
 
 // ✅ SEO Metadata
 export async function generateMetadata(): Promise<Metadata> {
-  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'soap';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soapstore.com';
+  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'Sastika Fashion and Fancy';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sastikafashionandfancy.com';
   
   return {
     title: `Contact Us | Customer Support | ${storeName}`,
-    description: `Contact ${storeName} for soap inquiries, order support, and customer service. We're here to help with all your organic soap questions.`,
-    keywords: ['contact soap', 'customer support', 'soap inquiries', 'order help', storeName],
+    description: `Contact ${storeName} for fashion inquiries, order support, and customer service. We're here to help with all your fashion questions.`,
+    keywords: ['contact fashion', 'customer support', 'fashion inquiries', 'order help', storeName],
     robots: {
       index: true,
       follow: true,
@@ -19,13 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
       url: `${siteUrl}/contact`,
       title: `Contact Us | ${storeName} Customer Support`,
-      description: `Get in touch with ${storeName} for all your organic soap questions and order support.`,
+      description: `Get in touch with ${storeName} for all your fashion questions and order support.`,
       siteName: storeName,
     },
     twitter: {
       card: 'summary',
       title: `Contact Us | ${storeName}`,
-      description: `Contact our support team for soap inquiries and order help.`,
+      description: `Contact our support team for fashion inquiries and order help.`,
     },
     alternates: {
       canonical: `${siteUrl}/contact`,
@@ -35,14 +35,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // ✅ Generate structured data for Contact Page
 function generateStructuredData() {
-  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'soap';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soapstore.com';
+  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'Sastika Fashion and Fancy';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sastikafashionandfancy.com';
   
   return {
     "@context": "https://schema.org",
     "@type": "ContactPage",
     "name": "Contact Us",
-    "description": "Contact page for soap customer support",
+    "description": "Contact page for fashion customer support",
     "url": `${siteUrl}/contact`,
     "mainEntity": {
       "@type": "Organization",
@@ -50,7 +50,7 @@ function generateStructuredData() {
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "customer service",
-        "email": "support@soap.com",
+        "email": "support@sastikafashionandfancy.com",
         "availableLanguage": ["English", "Hindi"],
         "contactOption": "TollFree"
       }
@@ -59,7 +59,7 @@ function generateStructuredData() {
 }
 
 export default function ContactPage() {
-  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'soap';
+  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'Sastika Fashion and Fancy';
   
   return (
     <>
@@ -77,14 +77,14 @@ export default function ContactPage() {
               Contact Us
             </h1>
             <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-              Have questions about our soaps or services? We&apos;d love to hear from you. Send us a message and we&apos;ll respond as soon as possible.
+              Have questions about our fashion products or services? We&apos;d love to hear from you. Send us a message and we&apos;ll respond as soon as possible.
             </p>
           </div>
 
           {/* Hidden semantic content for SEO */}
           <div className="sr-only">
-            <h2>Contact {storeName} - Soap</h2>
-            <p>Get customer support for organic soap purchases, order tracking, and product inquiries.</p>
+            <h2>Contact {storeName} - Fashion</h2>
+            <p>Get customer support for fashion purchases, order tracking, and product inquiries.</p>
           </div>
 
           {/* Content */}

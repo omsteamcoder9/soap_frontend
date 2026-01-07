@@ -54,7 +54,7 @@ export default function SortDropdown({ sortBy, sortOrder, onSortChange, compact 
               onClick={() => handleSortSelect(option.value)}
               className={`w-full text-left px-4 py-2 hover:bg-gray-200 transition-all duration-200 cursor-pointer ${
                 option.value === `${sortBy}-${sortOrder}` 
-                  ? 'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-900 hover:to-gray-950' 
+                  ? 'bg-gradient-to-r from-[#D4AF37] to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700' 
                   : 'text-gray-700 hover:text-gray-900'
               }`}
             >

@@ -5,7 +5,8 @@ import {
   FilterOptions, 
   FilteredProductsResponse,
   FeaturedProductsResponse,
-  PriceRangesResponse 
+  PriceRangesResponse,
+  ProductSize
 } from '@/types/product';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -99,6 +100,7 @@ export async function getFilteredFeaturedProducts(filters: {
   minPrice?: number;
   maxPrice?: number;
   colors?: string | string[];
+  sizes?: string | string[]; // ✅ ADDED: Size filtering
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -162,6 +164,47 @@ export async function getProductsByCategories(categoryIds: string[]): Promise<Ap
   return fetchAPI<ApiResponse>('/products', { category: categoryIds });
 }
 
+// ✅ Get available sizes for a product
+export async function getProductSizes(productId: string): Promise<ProductSize[]> {
+  const response = await getProductById(productId);
+  return response.data.sizes || [];
+}
+
+// ✅ Check if a specific size is available
+export function isSizeAvailable(product: Product, size: string): boolean {
+  if (!product.sizes || !Array.isArray(product.sizes)) return false;
+  
+  const sizeObj = product.sizes.find(s => s.size === size);
+  return sizeObj ? sizeObj.stock > 0 : false;
+}
+
+// ✅ Get available sizes for a product
+export function getAvailableSizes(product: Product): ProductSize[] {
+  if (!product.sizes || !Array.isArray(product.sizes)) return [];
+  
+  return product.sizes.filter(size => size.stock > 0);
+}
+
+// ✅ Get stock for a specific size
+export function getSizeStock(product: Product, size: string): number {
+  if (!product.sizes || !Array.isArray(product.sizes)) return 0;
+  
+  const sizeObj = product.sizes.find(s => s.size === size);
+  return sizeObj ? sizeObj.stock : 0;
+}
+
+// ✅ Calculate total stock from sizes
+export function calculateTotalStockFromSizes(product: Product): number {
+  if (!product.sizes || !Array.isArray(product.sizes)) return product.stock || 0;
+  
+  return product.sizes.reduce((total, size) => total + (size.stock || 0), 0);
+}
+
+// ✅ Check if product has sizes
+// ✅ Check if product has sizes
+export function hasSizes(product: Product): boolean {
+  return !!product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0;
+}
 // ✅ Utility function to build filter parameters
 export function buildFilterParams(filters: FilterOptions): APIParams {
   const params: APIParams = {};
@@ -172,6 +215,7 @@ export function buildFilterParams(filters: FilterOptions): APIParams {
   if (filters.minPrice) params.minPrice = filters.minPrice;
   if (filters.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters.colors) params.colors = filters.colors;
+  if (filters.sizes) params.sizes = filters.sizes; // ✅ ADDED: Size filter
   if (filters.featured) params.featured = filters.featured;
   if (filters.status) params.status = filters.status;
   if (filters.search) params.search = filters.search;
@@ -205,6 +249,19 @@ export const COLOR_OPTIONS = [
   { value: 'pink', label: 'Pink', code: '#FFC0CB' },
   { value: 'orange', label: 'Orange', code: '#FFA500' },
   { value: 'gray', label: 'Gray', code: '#808080' },
+];
+
+// ✅ Size options for filtering
+export const SIZE_OPTIONS = [
+  { value: 'XS', label: 'XS' },
+  { value: 'S', label: 'S' },
+  { value: 'M', label: 'M' },
+  { value: 'L', label: 'L' },
+  { value: 'XL', label: 'XL' },
+  { value: 'XXL', label: 'XXL' },
+  { value: 'XXXL', label: 'XXXL' },
+  { value: '4XL', label: '4XL' },
+  { value: '5XL', label: '5XL' },
 ];
 
 // ✅ Sort options
@@ -253,4 +310,66 @@ export function getColorStockStatus(color: { name: string; stock: number }): str
   if (color.stock > 10) return 'In Stock';
   if (color.stock > 0) return `Low Stock (${color.stock})`;
   return 'Out of Stock';
+}
+
+// ✅ Helper to get size stock status
+export function getSizeStockStatus(size: ProductSize): string {
+  if (size.stock > 10) return 'In Stock';
+  if (size.stock > 0) return `Low Stock (${size.stock})`;
+  return 'Out of Stock';
+}
+
+// ✅ Helper to get total stock (considering sizes if available)
+export function getTotalStock(product: Product): number {
+  return hasSizes(product) 
+    ? calculateTotalStockFromSizes(product)
+    : product.stock || 0;
+}
+
+// ✅ Helper to get product stock status
+export function getProductStockStatus(product: Product): {
+  status: 'in-stock' | 'low-stock' | 'out-of-stock';
+  message: string;
+  totalStock: number;
+} {
+  const totalStock = getTotalStock(product);
+  
+  if (totalStock > 10) {
+    return {
+      status: 'in-stock',
+      message: `In Stock (${totalStock})`,
+      totalStock
+    };
+  }
+  
+  if (totalStock > 0) {
+    return {
+      status: 'low-stock',
+      message: `Low Stock (${totalStock})`,
+      totalStock
+    };
+  }
+  
+  return {
+    status: 'out-of-stock',
+    message: 'Out of Stock',
+    totalStock: 0
+  };
+}
+
+// ✅ Helper to get size options for UI
+export function getSizeOptions(product: Product): Array<{
+  size: string;
+  stock: number;
+  available: boolean;
+  disabled: boolean;
+}> {
+  if (!hasSizes(product)) return [];
+  
+  return product.sizes!.map(size => ({
+    size: size.size,
+    stock: size.stock,
+    available: size.stock > 0,
+    disabled: size.stock <= 0
+  }));
 }

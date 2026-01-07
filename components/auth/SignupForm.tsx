@@ -146,8 +146,8 @@ export default function SignupForm() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 sm:p-8 space-y-6 sm:space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <span className="text-white font-bold text-lg sm:text-xl">ES</span>
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#D4AF37] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <span className="text-white font-bold text-lg sm:text-xl">S</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
               {isGuestUser ? 'Complete Your Account' : 'Create Your Account'}
@@ -273,7 +273,7 @@ export default function SignupForm() {
                 <button
                   type="button"
                   onClick={handleGuestContinue}
-                  className="w-full bg-gray-700 text-white py-3 sm:py-4 rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium shadow-lg hover:shadow-gray-900/25 text-sm sm:text-base"
+                  className="w-full bg-[#D4AF37] text-white py-3 sm:py-4 rounded-lg hover:bg-yellow-600 transition-all duration-200 font-medium shadow-lg hover:shadow-yellow-900/25 text-sm sm:text-base"
                 >
                   Continue to Set Password
                 </button>
@@ -281,7 +281,7 @@ export default function SignupForm() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gray-700 text-white py-3 sm:py-4 rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium shadow-lg hover:shadow-gray-900/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base cursor-pointer"
+                  className="w-full bg-[#D4AF37] text-white py-3 sm:py-4 rounded-lg hover:bg-yellow-600 transition-all duration-200 font-medium shadow-lg hover:shadow-yellow-900/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base cursor-pointer"
                 >
                   {isLoading ? (
                     <div className="flex items-center">
