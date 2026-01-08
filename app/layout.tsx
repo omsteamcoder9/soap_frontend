@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: 'soap',
   description: 'Your one-stop shop for eco-friendly products',
   icons: {
-    icon: "images/logot.png",
+    icon: "images/logot.jpg",
   },
 }
 

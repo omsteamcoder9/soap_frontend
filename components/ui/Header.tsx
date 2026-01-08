@@ -53,15 +53,15 @@ export default function Header() {
   // Check if mobile
   const [isMobile, setIsMobile] = useState(false);
  
-useEffect(() => {
-  const checkScreenSize = () => {
-    setIsMobile(window.innerWidth < 1280);
-  };
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1280);
+    };
 
-  checkScreenSize();
-  window.addEventListener('resize', checkScreenSize);
-  return () => window.removeEventListener('resize', checkScreenSize);
-}, []);
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -237,8 +237,8 @@ useEffect(() => {
 
   return (
     <>
-      {/* Main Header - Updated to match Footer color */}
-      <header className="bg-[#f2f2f2] shadow-md border-b border-gray-200 font-sans">
+      {/* Main Header - Updated to match Hero Section color (#F9F7F2) */}
+      <header className="bg-[#F9F7F2] shadow-md border-b border-gray-200 font-sans">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* logo2 and Mobile Menu Button */}
@@ -257,7 +257,7 @@ useEffect(() => {
               <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group cursor-pointer">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white rounded-lg flex items-center justify-center shadow border border-gray-200 group-hover:scale-105 transition-transform duration-200 overflow-hidden">
                   <Image
-                      src="/images/logo2.png"
+                    src="/images/logo2.png"
                     alt="soap logo2"
                     width={48}
                     height={48}
@@ -546,7 +546,7 @@ useEffect(() => {
                 onClick={() => setIsMobileMenuOpen(false)}
               />
               
-              <div className="absolute top-0 left-0 h-full w-64 bg-[#f2f2f2] border-r border-gray-200 shadow-2xl">
+              <div className="absolute top-0 left-0 h-full w-64 bg-[#F9F7F2] border-r border-gray-200 shadow-2xl">
                 <div className="flex flex-col h-full">
                   {/* Mobile Menu Header */}
                   <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -557,7 +557,7 @@ useEffect(() => {
                     >
                       <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow border border-gray-200 overflow-hidden">
                         <Image
-                            src="/images/logo2.png"  alt="soap logo2"
+                          src="/images/logo2.png"  alt="soap logo2"
                           width={32}
                           height={32}
                         />
@@ -669,7 +669,7 @@ useEffect(() => {
 
       {/* Bottom Navigation Footer - IMPROVED */}
       <div className={`
-        fixed bottom-0 left-0 right-0 bg-[#f2f2f2] border-t border-gray-200 shadow-xl z-40
+        fixed bottom-0 left-0 right-0 bg-[#F9F7F2] border-t border-gray-200 shadow-xl z-40
         transition-transform duration-300 ease-in-out
         ${isFooterVisible ? 'translate-y-0' : 'translate-y-full'}
         xl:hidden

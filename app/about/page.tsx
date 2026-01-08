@@ -13,13 +13,13 @@ interface TeamMember {
 
 // ✅ SEO Metadata
 export async function generateMetadata(): Promise<Metadata> {
-  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'Soap Store';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soapstore.com';
+  const storeName = process.env.NEXT_PUBLIC_SITE_NAME;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   
   return {
     title: `About Us | Our Story & Mission | ${storeName}`,
     description: `Discover ${storeName}'s story, mission, and values. Learn about our journey in providing Soap and skincare products.`,
-    keywords: ['about soap', 'our story', 'organic soap company', 'soap mission', 'our team', storeName],
+    keywords: ['about soap', 'our story', 'organic soap company', 'soap mission', 'our team'],
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',
