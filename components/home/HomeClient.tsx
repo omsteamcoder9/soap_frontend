@@ -14,7 +14,7 @@ interface HomeClientProps {
   featuredCategories: Category[];
 }
 
-export default function HomeClient({  featuredCategories }: HomeClientProps) {
+export default function HomeClient({ featuredCategories }: HomeClientProps) {
   const router = useRouter();
   const heroRef = useRef(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -59,85 +59,93 @@ export default function HomeClient({  featuredCategories }: HomeClientProps) {
       </div>
 
       {/* Glainic Hero Section */}
-      <section
-        ref={heroRef}
-        className="relative min-h-[75vh] flex items-center overflow-hidden"
-        aria-label="Glainic Soap Hero Section"
-      >
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0">
-  <Image
-    src="/images/g1.png"
-    alt="Glainic Natural Skincare"
-    fill
-    priority
-    sizes="100vw"
-    className="object-cover object-right-top"
-  />
+<section
+  ref={heroRef}
+  className="relative min-h-screen flex items-center overflow-hidden bg-[#0f110c]"
+  aria-label="Glafnic Soap Hero Section"
+>
+  {/* Background Image Container */}
+  <div className="absolute inset-0 z-0">
+    <Image
+      src="/images/g2.jpg" // Replace with an image of organic soap bars with botanical leaves
+      alt="Glafnic Organic Soap and Botanicals"
+      fill
+      priority
+      sizes="100vw"
+      className="object-cover object-right md:object-center"
+    />
+    {/* Dynamic Overlays for Readability */}
+    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent md:from-black/70 md:via-black/20" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+  </div>
 
-  {/* overlay */}
-  <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-transparent" />
-</div>
-
-
-          {/* Soft luxury overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent"></div>
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10">
-          <div className="max-w-2xl text-center md:text-left">
-            {/* Brand */}
-            <div className="mb-6">
-              <p className="text-white/80 tracking-widest uppercase text-sm">
-                GLAINIC™
-              </p>
-              <p className="italic text-white/90 text-lg mt-1">
-                Pure. Gentle. Naturally Beautiful.
-              </p>
-            </div>
-
-            {/* Headline */}
-            <h1 className="font-serif text-white leading-tight drop-shadow-2xl">
-              <span className="block text-5xl md:text-6xl lg:text-7xl">
-                Hold
-              </span>
-              <span className="block text-4xl md:text-5xl lg:text-6xl italic mt-2">
-                the Nature
-              </span>
-            </h1>
-
-            {/* Subline */}
-            <p className="mt-6 text-white/90 text-lg md:text-xl max-w-xl">
-              Successfully launched.
-              <span className="block text-white/70 mt-1 text-base">
-                A ritual of nature, crafted for your skin.
-              </span>
-            </p>
-
-            {/* Buttons */}
-            <div className="mt-10 flex gap-4 justify-center md:justify-start">
-              <button
-                onClick={navigateToProducts}
-                className="bg-gray-700 hover:bg-gray-800 text-white px-8 py-3 rounded-full font-semibold shadow-xl transition-transform hover:scale-105"
-                aria-label="Explore our organic soap collection"
-              >
-                Explore
-              </button>
-
-              <button
-                className="border border-white/60 text-white px-8 py-3 rounded-full font-semibold backdrop-blur-sm hover:bg-white/10 transition"
-                aria-label="Learn more about our organic soaps"
-                onClick={() => router.push('/about')}
-              >
-                Learn More
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+  {/* Main Content Container */}
+  <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
+    <div className="max-w-2xl text-left">
       
+      {/* Brand Header */}
+      <div className="space-y-1 mb-8">
+        <div className="flex items-center gap-3">
+          <span className="h-[1px] w-10 bg-emerald-400/60"></span>
+          <p className="text-emerald-100/80 tracking-[0.4em] uppercase text-xs font-medium">
+            Glainic™ Essentials
+          </p>
+        </div>
+        <p className="italic text-white/60 text-base md:text-lg font-light pl-13">
+          Pure. Gentle. Naturally Beautiful.
+        </p>
+      </div>
+
+      {/* Hero Headline */}
+      <h1 className="font-serif text-white leading-[1.1] mb-6">
+        <span className="block text-6xl md:text-7xl lg:text-8xl font-light tracking-tight">
+          Hold
+        </span>
+        <span className="block text-5xl md:text-6xl lg:text-7xl italic font-extralight text-emerald-50/90 ml-4 md:ml-12">
+          the Nature
+        </span>
+      </h1>
+
+      {/* Description Text */}
+      <div className="space-y-4 max-w-lg mb-10">
+        <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed">
+          The art of cleansing redefined. Experience a ritual of nature, 
+          meticulously crafted for your skin's soul.
+        </p>
+        <div className="flex items-center gap-2 text-white/50 text-sm tracking-wide">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Newly Launched Collection
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-5">
+        <button
+          onClick={navigateToProducts}
+          className="bg-white hover:bg-emerald-50 text-black px-10 py-4 rounded-full font-bold transition-all shadow-2xl hover:shadow-emerald-500/20 active:scale-95"
+        >
+          Explore Collection
+        </button>
+
+        <button
+          onClick={() => router.push('/about')}
+          className="group flex items-center gap-3 text-white border-b border-white/20 hover:border-white transition-all py-2"
+        >
+          <span className="font-medium">Learn Our Story</span>
+          <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* Minimalist Scroll Indicator */}
+  <div className="absolute bottom-12 left-6 md:left-12 hidden md:flex items-center gap-4">
+    <div className="w-[1px] h-16 bg-gradient-to-b from-white/60 to-transparent" />
+    <span className="text-[9px] text-white/40 tracking-[0.5em] uppercase vertical-text">
+      Scroll to discover
+    </span>
+  </div>
+</section>
 
       {/* Skin-vestment Section */}
       <section className="bg-[#f6f5f2] py-28" aria-label="Our Skin-Vestment Philosophy">
@@ -184,45 +192,6 @@ export default function HomeClient({  featuredCategories }: HomeClientProps) {
           </div>
         </div>
       </section>
-        {/* All Categories Section */}
-{/* <div className="mt-12">
-  <div className="text-center mb-8">
-    <h3 className="text-3xl font-bold text-gray-900 mb-4">Browse All Categories</h3>
-    <p className="text-gray-600 max-w-2xl mx-auto">
-      Discover our complete range of soap categories
-    </p>
-  </div>
-  
-  <div className="flex flex-wrap justify-center gap-6 px-4">
-    {categories.map((category) => (
-      <div key={category._id} className="w-64">
-        <Link
-          href={`/products?category=${category.slug || category._id}`}
-          className="group bg-white backdrop-blur-sm rounded-3xl border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden p-6 text-center block h-full"
-          aria-label={`Browse ${category.name} soaps`}
-          itemScope
-          itemType="https://schema.org/ProductCategory"
-        >
-          <div 
-            className="w-16 h-16 bg-gradient-to-br from-[#556B2F]/10 to-[#D9825B]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300"
-            itemProp="image"
-            aria-hidden="true"
-          >
-            <svg className="w-8 h-8 text-[#556B2F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2" itemProp="name">
-            {category.name}
-          </h3>
-          <p className="text-gray-600 text-sm leading-relaxed" itemProp="description">
-            {category.description || `Premium organic ${category.name.toLowerCase()} soaps for healthy skin`}
-          </p>
-        </Link>
-      </div>
-    ))}
-  </div>
-</div> */}
 
       {/* Explore Soaps Section */}
       <section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
@@ -259,16 +228,15 @@ export default function HomeClient({  featuredCategories }: HomeClientProps) {
                   </button>
                 </div>
 
+                {/* CHANGED: limit from 18 to 12 */}
                 <ProductGrid 
                   category={category._id} 
-                  limit={18}
+                  limit={12} 
                   hideFilters={true}
                 />
               </div>
             ))}
           </div>
-
-        
         </div>
       </section>
 

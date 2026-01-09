@@ -43,6 +43,9 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
   const filterBarRef = useRef<HTMLDivElement>(null);
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
   
+  // Determine if this is the home page (hideFilters is true and limit is not specified)
+  const isHomePage = hideFilters && limit === undefined;
+  
   // Filter state with proper typing
   const [filters, setFilters] = useState<FilterState>({
     category: category || '',
@@ -140,10 +143,11 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
         productsData = filtered;
       }
 
-      // APPLY LIMIT
-      if (limit && productsData) {
-        console.log(`🎯 Applying limit: ${limit} products`);
-        productsData = productsData.slice(0, limit);
+      // APPLY LIMIT - Always 12 for home page, otherwise use limit prop
+      const finalLimit = isHomePage ? 12 : limit;
+      if (finalLimit && productsData) {
+        console.log(`🎯 Applying limit: ${finalLimit} products`);
+        productsData = productsData.slice(0, finalLimit);
       }
 
       console.log('✅ Final products:', productsData?.length);
@@ -154,7 +158,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
     } finally {
       setLoading(false);
     }
-  }, [filters, limit]); // Add dependencies for useCallback
+  }, [filters, limit, isHomePage]); // Add dependencies for useCallback
 
   useEffect(() => {
     async function loadData() {
@@ -419,32 +423,31 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
                     
                     <div className="flex flex-wrap gap-2">
                       {/* Category Filter */}
-  {/* Category Filter */}
-<FilterDropdown
-  title="Category"
-  value={filters.category}
-  options={[
-    { value: '', label: 'All Categories' },
-    ...categories.map(cat => ({ value: cat._id, label: cat.name }))
-  ]}
-  onSelect={(value) => handleFiltersChange({ ...filters, category: value as string })}
-/>
+                      <FilterDropdown
+                        title="Category"
+                        value={filters.category}
+                        options={[
+                          { value: '', label: 'All Categories' },
+                          ...categories.map(cat => ({ value: cat._id, label: cat.name }))
+                        ]}
+                        onSelect={(value) => handleFiltersChange({ ...filters, category: value as string })}
+                      />
 
-{/* Price Range Filter */}
-<FilterDropdown
-  title="Price"
-  value={filters.priceRange}
-  options={[
-    { value: '', label: 'All Prices' },
-    { value: '100-200', label: '₹100-200' },
-    { value: '200-300', label: '₹200-300' },
-    { value: '300-400', label: '₹300-400' },
-    { value: '400-500', label: '₹400-500' },
-    { value: '500-600', label: '₹500-600' },
-    { value: 'above-600', label: 'Above ₹600' }
-  ]}
-  onSelect={(value) => handleFiltersChange({ ...filters, priceRange: value as string })}
-/>
+                      {/* Price Range Filter */}
+                      <FilterDropdown
+                        title="Price"
+                        value={filters.priceRange}
+                        options={[
+                          { value: '', label: 'All Prices' },
+                          { value: '100-200', label: '₹100-200' },
+                          { value: '200-300', label: '₹200-300' },
+                          { value: '300-400', label: '₹300-400' },
+                          { value: '400-500', label: '₹400-500' },
+                          { value: '500-600', label: '₹500-600' },
+                          { value: 'above-600', label: 'Above ₹600' }
+                        ]}
+                        onSelect={(value) => handleFiltersChange({ ...filters, priceRange: value as string })}
+                      />
 
                       {/* Clear Filters Button - Hidden when sticky on desktop */}
                       {!isSticky && activeFilterCount > 0 && (

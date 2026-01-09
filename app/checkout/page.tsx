@@ -79,6 +79,29 @@ interface FormData {
   country: string;
 }
 
+// Add interface for public settings
+interface PublicSettings {
+  razorpayEnabled: boolean;
+  razorpayKeyId: string;
+  cashOnDeliveryEnabled: boolean;
+  contactNumber: string;
+  contactEmail: string;
+  companyAddress: string;
+  siteName: string;
+  siteTitle: string;
+  siteDescription: string;
+  footerText: string;
+  footerLinks: Array<{name: string; url: string}>;
+  facebookUrl: string;
+  twitterUrl: string;
+  instagramUrl: string;
+  linkedinUrl: string;
+  maintenanceMode: boolean;
+  metaKeywords: string[];
+  googleAnalyticsId: string;
+  updatedAt: Date;
+}
+
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const { user, token } = useAuth();
@@ -99,6 +122,11 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [paymentSettings, setPaymentSettings] = useState<{razorpayEnabled: boolean; cashOnDeliveryEnabled: boolean}>({
+    razorpayEnabled: false,
+    cashOnDeliveryEnabled: true
+  });
+  const [settingsLoading, setSettingsLoading] = useState(true);
 
   // Auto-fill email if user is logged in
   useEffect(() => {
@@ -122,6 +150,35 @@ export default function CheckoutPage() {
       setAuthError('');
     }
   }, [user, token]);
+
+  // Fetch public settings to check payment methods
+  useEffect(() => {
+    fetchPaymentSettings();
+  }, []);
+
+const fetchPaymentSettings = async () => {
+  try {
+    setSettingsLoading(true);
+    // Add this line to get the backend URL
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ;
+    
+    // Update this line to use the environment variable
+const response = await fetch(`${API_URL}/settings/public`);    const data = await response.json();
+    
+    if (data.success) {
+      const settings: PublicSettings = data.data;
+      setPaymentSettings({
+        razorpayEnabled: settings.razorpayEnabled,
+        cashOnDeliveryEnabled: settings.cashOnDeliveryEnabled
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching payment settings:', error);
+    // Keep default settings if fetch fails
+  } finally {
+    setSettingsLoading(false);
+  }
+};
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -156,6 +213,13 @@ export default function CheckoutPage() {
     try {
       setPaymentLoading(true);
       setAuthError('');
+
+      // Check if Razorpay is enabled
+      if (!paymentSettings.razorpayEnabled) {
+        alert('Razorpay payment is currently disabled. Please use Cash on Delivery.');
+        setPaymentLoading(false);
+        return;
+      }
 
       // Validate form
       if (!formData.firstName || !formData.lastName || !formData.email || 
@@ -362,6 +426,13 @@ export default function CheckoutPage() {
       setLoading(true);
       setAuthError('');
 
+      // Check if Cash on Delivery is enabled
+      if (!paymentSettings.cashOnDeliveryEnabled) {
+        alert('Cash on Delivery is currently disabled. Please use Razorpay payment.');
+        setLoading(false);
+        return;
+      }
+
       // Validate form
       if (!formData.firstName || !formData.lastName || !formData.email || 
           !formData.phone || !formData.address || !formData.city || 
@@ -464,13 +535,13 @@ export default function CheckoutPage() {
     }
   };
 
-  // Show loading if cart is empty (will redirect)
-  if (cart.items.length === 0) {
+  // Show loading if cart is empty (will redirect) or settings are loading
+  if (cart.items.length === 0 || settingsLoading) {
     return (
       <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -479,6 +550,31 @@ export default function CheckoutPage() {
   const tax = (cart.totalPrice || 0) * 0.18;
   const shippingFee = (cart.totalPrice || 0) > 500 ? 0 : 50;
   const total = (cart.totalPrice || 0) + tax + shippingFee;
+
+  // Check if at least one payment method is available
+  const isAnyPaymentMethodAvailable = paymentSettings.razorpayEnabled || paymentSettings.cashOnDeliveryEnabled;
+
+  if (!isAnyPaymentMethodAvailable) {
+    return (
+      <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-white rounded-lg shadow-sm p-8 max-w-md mx-4">
+            <svg className="w-16 h-16 mx-auto text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No Payment Methods Available</h2>
+            <p className="text-gray-600 mb-4">All payment methods are currently disabled. Please contact the store administrator.</p>
+            <button
+              onClick={() => router.push('/cart')}
+              className="px-6 py-3 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-900 transition-all duration-200"
+            >
+              Return to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f2f2f2] py-8 sm:py-12">
@@ -732,35 +828,48 @@ export default function CheckoutPage() {
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Payment Method</h2>
               
               <div className="space-y-4">
-                <button
-                  onClick={handleRazorpayPayment}
-                  disabled={paymentLoading || loading || !!authError}
-                  className="w-full bg-gradient-to-r from-gray-800 to-gray-700 text-white py-3 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-gray-900/25 cursor-pointer text-sm sm:text-base"
-                >
-                  {paymentLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    `Pay ₹${total.toFixed(2)}`
-                  )}
-                </button>
+                {/* Razorpay Payment Button - Only show if enabled */}
+                {paymentSettings.razorpayEnabled && (
+                  <button
+                    onClick={handleRazorpayPayment}
+                    disabled={paymentLoading || loading || !!authError}
+                    className="w-full bg-gradient-to-r from-gray-800 to-gray-700 text-white py-3 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-gray-900/25 cursor-pointer text-sm sm:text-base"
+                  >
+                    {paymentLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      `Pay ₹${total.toFixed(2)}`
+                    )}
+                  </button>
+                )}
 
-                <button
-                  onClick={handleCashOnDelivery}
-                  disabled={loading || paymentLoading || !!authError}
-                  className="w-full border border-gray-700 text-gray-700 py-3 rounded-lg hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center hover:shadow-lg text-sm sm:text-base"
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-gray-700 mr-2"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    'Cash on Delivery'
-                  )}
-                </button>
+                {/* Cash on Delivery Button - Only show if enabled */}
+                {paymentSettings.cashOnDeliveryEnabled && (
+                  <button
+                    onClick={handleCashOnDelivery}
+                    disabled={loading || paymentLoading || !!authError}
+                    className="w-full border border-gray-700 text-gray-700 py-3 rounded-lg hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center hover:shadow-lg text-sm sm:text-base"
+                  >
+                    {loading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-gray-700 mr-2"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      'Cash on Delivery'
+                    )}
+                  </button>
+                )}
+
+                {/* Message when no payment methods are available (should not happen due to earlier check) */}
+                {!paymentSettings.razorpayEnabled && !paymentSettings.cashOnDeliveryEnabled && (
+                  <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-yellow-700">No payment methods are currently available. Please contact support.</p>
+                  </div>
+                )}
               </div>
 
               {/* User Status */}
