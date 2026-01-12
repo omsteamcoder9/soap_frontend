@@ -5,7 +5,11 @@ import {
   FilterOptions, 
   FilteredProductsResponse,
   FeaturedProductsResponse,
-  PriceRangesResponse 
+  PriceRangesResponse,
+  CreateProductData,
+  UpdateProductData,
+  SingleProductResponse,
+  CreateProductResponse
 } from '@/types/product';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -62,19 +66,114 @@ async function fetchAPI<T>(endpoint: string, params: APIParams = {}): Promise<T>
   }
 }
 
+// Helper function for POST/PUT/PATCH requests
+async function mutateAPI<T>(endpoint: string, method: 'POST' | 'PUT' | 'PATCH', data: any): Promise<T> {
+  try {
+    const url = new URL(`${API_BASE_URL}${endpoint}`);
+    
+    console.log('🌐 API Call:', url.toString());
+    console.log('📋 Method:', method);
+    console.log('📦 Request Data:', data);
+
+    const formData = new FormData();
+    
+    // Handle file uploads and regular data
+    Object.keys(data).forEach(key => {
+      if (key === 'images' && Array.isArray(data[key])) {
+        // Handle image files
+        data[key].forEach((file: File, index: number) => {
+          formData.append('images', file);
+        });
+      } else if (key === 'keyFeatures' && Array.isArray(data[key])) {
+        // Handle keyFeatures array
+        formData.append(key, JSON.stringify(data[key]));
+      } else if (key === 'specifications' && Array.isArray(data[key])) {
+        // Handle specifications array
+        formData.append(key, JSON.stringify(data[key]));
+      } else if (key === 'colors' && Array.isArray(data[key])) {
+        // Handle colors array
+        formData.append(key, JSON.stringify(data[key]));
+      } else if (key === 'variants' && Array.isArray(data[key])) {
+        // ✅ ADDED: Handle variants array
+        formData.append(key, JSON.stringify(data[key]));
+      } else if (data[key] !== undefined && data[key] !== null && data[key] !== '') {
+        // Handle other fields
+        // ✅ CHANGED: Map 'price' to 'basePrice' for backend compatibility
+        if (key === 'price') {
+          formData.append('basePrice', data[key]);
+        } else {
+          formData.append(key, data[key]);
+        }
+      }
+    });
+
+    const response = await fetch(url.toString(), {
+      method,
+      body: formData,
+    });
+
+    console.log('📡 Response Status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ API Error Response:', errorText);
+      throw new Error(`API error: ${response.status} - ${errorText}`);
+    }
+
+    const responseData = await response.json();
+    console.log('✅ API Success:', responseData);
+    return responseData as T;
+  } catch (error) {
+    console.error('❌ API call failed:', error);
+    throw error;
+  }
+}
+
 // ✅ Get all products with optional category filtering
 export async function getAllProducts(filters: { category?: string } = {}): Promise<ApiResponse> {
   return fetchAPI<ApiResponse>('/products', filters);
 }
 
 // ✅ Get product by ID
-export async function getProductById(id: string): Promise<{ success: boolean; data: Product }> {
-  return fetchAPI<{ success: boolean; data: Product }>(`/products/${id}`);
+export async function getProductById(id: string): Promise<SingleProductResponse> {
+  return fetchAPI<SingleProductResponse>(`/products/${id}`);
 }
 
 // ✅ Get product by slug
-export async function getProductBySlug(slug: string): Promise<{ success: boolean; data: Product }> {
-  return fetchAPI<{ success: boolean; data: Product }>(`/products/slug/${slug}`);
+export async function getProductBySlug(slug: string): Promise<SingleProductResponse> {
+  return fetchAPI<SingleProductResponse>(`/products/slug/${slug}`);
+}
+
+// ✅ Create new product
+export async function createProduct(productData: CreateProductData): Promise<CreateProductResponse> {
+  return mutateAPI<CreateProductResponse>('/products', 'POST', productData);
+}
+
+// ✅ Update product
+export async function updateProduct(productData: UpdateProductData): Promise<CreateProductResponse> {
+  const { _id, ...data } = productData;
+  return mutateAPI<CreateProductResponse>(`/products/${_id}`, 'PUT', data);
+}
+
+// ✅ Delete product
+export async function deleteProduct(id: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const url = new URL(`${API_BASE_URL}/products/${id}`);
+    
+    const response = await fetch(url.toString(), {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API error: ${response.status} - ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Delete product failed:', error);
+    throw error;
+  }
 }
 
 // ✅ Get featured products with filtering
@@ -98,7 +197,7 @@ export async function getFilteredFeaturedProducts(filters: {
   categories?: string | string[];
   minPrice?: number;
   maxPrice?: number;
-  colors?: string | string[];
+  colors?: string | string[]; // ✅ KEEP: Color filtering
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -117,7 +216,7 @@ export async function quickSearchProducts(
     _id: string;
     name: string;
     slug: string;
-    price: number;
+    basePrice: number; // ✅ CHANGED: from price to basePrice
     image: string | null;
     category: string;
     featured: boolean;
@@ -133,7 +232,7 @@ export async function quickSearchProducts(
       _id: string;
       name: string;
       slug: string;
-      price: number;
+      basePrice: number;
       image: string | null;
       category: string;
       featured: boolean;
@@ -171,7 +270,7 @@ export function buildFilterParams(filters: FilterOptions): APIParams {
   if (filters.priceRange) params.priceRange = filters.priceRange;
   if (filters.minPrice) params.minPrice = filters.minPrice;
   if (filters.maxPrice) params.maxPrice = filters.maxPrice;
-  if (filters.colors) params.colors = filters.colors;
+  if (filters.colors) params.colors = filters.colors; // ✅ KEEP
   if (filters.featured) params.featured = filters.featured;
   if (filters.status) params.status = filters.status;
   if (filters.search) params.search = filters.search;
@@ -248,9 +347,75 @@ export function getProductImageUrl(product: Product): string {
   return `${process.env.NEXT_PUBLIC_IMG_URL}`;
 }
 
+// ✅ Helper to get variant image URL
+export function getVariantImageUrl(variant: any): string {
+  if (variant.images && variant.images.length > 0 && variant.images[0].image) {
+    const imagePath = variant.images[0].image;
+    
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    const baseUrl = process.env.NEXT_PUBLIC_IMG_URL;
+    return `${baseUrl}${imagePath}`;
+  }
+  
+  return `${process.env.NEXT_PUBLIC_IMG_URL}`;
+}
+
 // ✅ Helper to get color stock status
 export function getColorStockStatus(color: { name: string; stock: number }): string {
   if (color.stock > 10) return 'In Stock';
   if (color.stock > 0) return `Low Stock (${color.stock})`;
   return 'Out of Stock';
+}
+
+// ✅ Helper to get variant stock status
+export function getVariantStockStatus(variant: { variantName: string; stock: number }): string {
+  if (variant.stock > 10) return 'In Stock';
+  if (variant.stock > 0) return `Low Stock (${variant.stock})`;
+  return 'Out of Stock';
+}
+
+// ✅ Helper to get key features as array (for display)
+export function getKeyFeatures(product: Product): string[] {
+  if (product.keyFeatures && Array.isArray(product.keyFeatures)) {
+    return product.keyFeatures;
+  }
+  return [];
+}
+
+// ✅ Helper to check if product has key features
+export function hasKeyFeatures(product: Product): boolean {
+  return !!(product.keyFeatures && product.keyFeatures.length > 0);
+}
+
+// ✅ Helper to format key features for display
+export function formatKeyFeatures(keyFeatures: string[]): string[] {
+  return keyFeatures.map(feature => feature.trim()).filter(feature => feature !== '');
+}
+
+// ✅ Helper to create key features from comma-separated string
+export function createKeyFeaturesFromString(input: string): string[] {
+  return input
+    .split(',')
+    .map(feature => feature.trim())
+    .filter(feature => feature !== '');
+}
+
+// ✅ Helper to get the default variant
+export function getDefaultVariant(product: Product): any | null {
+  if (product.variants && product.variants.length > 0) {
+    const defaultVariant = product.variants.find(v => v.isDefault);
+    return defaultVariant || product.variants[0];
+  }
+  return null;
+}
+
+// ✅ Helper to get the active price (basePrice or variant price)
+export function getActivePrice(product: Product, selectedVariant?: any): number {
+  if (selectedVariant && selectedVariant.price) {
+    return selectedVariant.price;
+  }
+  return product.basePrice;
 }

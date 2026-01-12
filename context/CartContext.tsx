@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'; // <-- CHANGED: Added useCallback import
-import { Product } from '@/types/product';
+import { Product, ProductVariant } from '@/types/product';
 import { Cart, CartItem } from '@/types/cart';
 import * as cartAPI from '@/lib/cart';
 import { useAuth } from '@/context/AuthContext';
@@ -12,7 +12,7 @@ interface CartContextType {
   loading: boolean;
   addingProductId: string | null;
   isGuest: boolean;
-  addToCart: (product: Product, quantity: number) => Promise<void>;
+  addToCart: (product: Product, quantity: number, selectedVariant?: ProductVariant) => Promise<void>; // ✅ ADD selectedVariant
   updateCartItem: (itemId: string, quantity: number) => Promise<void>;
   removeFromCart: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -131,48 +131,52 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     refreshCart();
   }, [user, authLoading, refreshCart]); // <-- CHANGED: Added refreshCart as dependency
 
-  // ✅ FIXED: Guest cart functions
-  const handleGuestAddToCart = (product: Product, quantity: number): Cart => {
-    console.log('🛒 handleGuestAddToCart called for product:', product._id);
-    
-    const guestCart = { 
-      ...cart,
-      items: cart.items ? [...cart.items] : []
-    };
-    
-    const existingItemIndex = guestCart.items.findIndex(
-      item => item && item.product && item.product._id === product._id
-    );
-    
-    if (existingItemIndex > -1) {
-      guestCart.items[existingItemIndex].quantity += quantity;
-      guestCart.items[existingItemIndex].updatedAt = new Date().toISOString();
-      console.log('🛒 Updated existing item');
-    } else {
-      const guestItemId = `guest-${product._id}-${Date.now()}`;
-      
-      const newItem: CartItem = {
-        _id: guestItemId,
-        product,
-        quantity,
-        price: product.price,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      guestCart.items.push(newItem);
-      console.log('🛒 Added new item');
-    }
-    
-    // Recalculate totals
-    guestCart.totalItems = guestCart.items.reduce((sum, item) => sum + item.quantity, 0);
-    guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-    guestCart.updatedAt = new Date().toISOString();
-    
-    // Save to localStorage
-    saveGuestCart(guestCart);
-    
-    return guestCart;
+// Line 149 - Update handleGuestAddToCart function signature
+const handleGuestAddToCart = (product: Product, quantity: number, selectedVariant?: ProductVariant): Cart => {
+  console.log('🛒 handleGuestAddToCart called for product:', product._id, 'variant:', selectedVariant?.variantName);
+  
+  const guestCart = { 
+    ...cart,
+    items: cart.items ? [...cart.items] : []
   };
+  
+  // ✅ MODIFIED: Check for same variant too
+  const existingItemIndex = guestCart.items.findIndex(
+    item => item && item.product && item.product._id === product._id && 
+            item.selectedVariant?._id === selectedVariant?._id
+  );
+  
+  if (existingItemIndex > -1) {
+    guestCart.items[existingItemIndex].quantity += quantity;
+    guestCart.items[existingItemIndex].price = selectedVariant?.price || product.basePrice; // ✅ Use variant price
+    guestCart.items[existingItemIndex].updatedAt = new Date().toISOString();
+    console.log('🛒 Updated existing item with variant');
+  } else {
+    const guestItemId = `guest-${product._id}-${selectedVariant?._id || 'base'}-${Date.now()}`;
+    
+    const newItem: CartItem = {
+      _id: guestItemId,
+      product,
+      selectedVariant, // ✅ STORE VARIANT INFO
+      quantity,
+      price: selectedVariant?.price || product.basePrice, // ✅ Use variant price
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    guestCart.items.push(newItem);
+    console.log('🛒 Added new item with variant');
+  }
+  
+  // Recalculate totals
+  guestCart.totalItems = guestCart.items.reduce((sum, item) => sum + item.quantity, 0);
+  guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0); // ✅ Use item.price
+  guestCart.updatedAt = new Date().toISOString();
+  
+  // Save to localStorage
+  saveGuestCart(guestCart);
+  
+  return guestCart;
+};
 
   const handleGuestUpdateCartItem = (itemId: string, quantity: number): Cart => {
     const guestCart = { 
@@ -190,8 +194,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       }
       
       guestCart.totalItems = guestCart.items.reduce((sum, item) => sum + item.quantity, 0);
-      guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-      guestCart.updatedAt = new Date().toISOString();
+guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.product.basePrice * item.quantity), 0);      guestCart.updatedAt = new Date().toISOString();
       
       saveGuestCart(guestCart);
     }
@@ -207,8 +210,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     guestCart.items = guestCart.items.filter(item => item._id !== itemId);
     
     guestCart.totalItems = guestCart.items.reduce((sum, item) => sum + item.quantity, 0);
-    guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-    guestCart.updatedAt = new Date().toISOString();
+guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.product.basePrice * item.quantity), 0);    guestCart.updatedAt = new Date().toISOString();
     
     saveGuestCart(guestCart);
     
@@ -223,33 +225,35 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   };
 
   // ✅ FIXED: addToCart function with proper guest detection
-  const addToCart = async (product: Product, quantity: number) => {
-    console.log('🛒 addToCart called, isGuest:', isGuest);
+// Line 186 - Update addToCart function signature
+const addToCart = async (product: Product, quantity: number, selectedVariant?: ProductVariant) => {
+  console.log('🛒 addToCart called, isGuest:', isGuest, 'variant:', selectedVariant?.variantName);
+  
+  try {
+    setAddingProductId(product._id);
+    setLoading(true);
     
-    try {
-      setAddingProductId(product._id);
-      setLoading(true);
-      
-      if (isGuest) {
-        console.log('🛒 Using guest cart handler');
-        const updatedCart = handleGuestAddToCart(product, quantity);
-        setCart(updatedCart);
-      } else {
-        console.log('🛒 Using API cart handler');
-        const updatedCart = await cartAPI.addToCart({
-          productId: product._id,
-          quantity
-        });
-        setCart(updatedCart);
-      }
-    } catch (error) {
-      console.error('❌ Error in addToCart:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-      setAddingProductId(null);
+    if (isGuest) {
+      console.log('🛒 Using guest cart handler with variant');
+      const updatedCart = handleGuestAddToCart(product, quantity, selectedVariant);
+      setCart(updatedCart);
+    } else {
+      console.log('🛒 Using API cart handler with variant');
+      const updatedCart = await cartAPI.addToCart({
+        productId: product._id,
+        variantId: selectedVariant?._id || selectedVariant?.variantName,  // ✅ Send variant ID to backend
+        quantity
+      });
+      setCart(updatedCart);
     }
-  };
+  } catch (error) {
+    console.error('❌ Error in addToCart:', error);
+    throw error;
+  } finally {
+    setLoading(false);
+    setAddingProductId(null);
+  }
+};
 
   const updateCartItem = async (itemId: string, quantity: number) => {
     try {

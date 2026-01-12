@@ -3,24 +3,104 @@
 
 import { Truck, Shield, Clock, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Category } from '@/types/category';
 import ProductGrid from '@/components/products/ProductGrid';
 import Image from "next/image";
-// import Link from 'next/link'; // Added missing import
 
 interface HomeClientProps {
   categories: Category[];
   featuredCategories: Category[];
 }
 
+// Define slide data - 3 slides
+const heroSlides = [
+  {
+    id: 1,
+    titleLine1: "Hold",
+    titleLine2: "the Nature",
+    subtitle: "Glainic™ Essentials",
+    tagline: "Pure. Gentle. Naturally Beautiful.",
+    description: "The art of cleansing redefined. Experience a ritual of nature, meticulously crafted for your skin's soul.",
+    bgImage: "/images/aaa.png",
+    overlay: "from-black/80 via-black/40 to-transparent",
+
+    ctaLink: "/products",
+    accentColor: "emerald"
+  },
+  {
+    id: 2,
+    titleLine1: "Pure",
+    titleLine2: "Essentials",
+    subtitle: "Organic Collection",
+    tagline: "Nature's Touch in Every Bar",
+    description: "Handcrafted with organic botanicals for your daily cleansing ritual.",
+    bgImage: "/images/f2.jpg", // Using same image for all slides
+    overlay: "from-blue-900/80 via-blue-800/40 to-transparent",
+  
+    ctaLink: "/products?category=organic",
+    accentColor: "blue"
+  },
+  {
+    id: 3,
+    titleLine1: "Luxury",
+    titleLine2: "Redefined",
+    subtitle: "Premium Range",
+    tagline: "Elevate Your Daily Ritual",
+    description: "Indulge in premium ingredients that nourish and rejuvenate your skin.",
+    bgImage: "/images/g2.jpg", // Using same image for all slides
+    overlay: "from-amber-900/80 via-amber-800/40 to-transparent",
+  
+    ctaLink: "/products?category=premium",
+    accentColor: "amber"
+  }
+];
+
 export default function HomeClient({ featuredCategories }: HomeClientProps) {
   const router = useRouter();
   const heroRef = useRef(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Auto slide change - works on both mobile and desktop
+  useEffect(() => {
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 4000); // Change slide every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [currentSlide]);
 
   const navigateToProducts = () => {
     router.push('/products');
+  };
+
+  const nextSlide = () => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const prevSlide = () => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+    
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const goToSlide = (index: number) => {
+    if (isTransitioning || index === currentSlide) return;
+    
+    setIsTransitioning(true);
+    setCurrentSlide(index);
+    
+    setTimeout(() => setIsTransitioning(false), 500);
   };
 
   const faqItems = [
@@ -58,94 +138,180 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-gray-100 rounded-full blur-3xl opacity-20 animate-pulse-slow delay-1000"></div>
       </div>
 
-      {/* Glainic Hero Section */}
+      {/* Hero Slider Section - 3 Slides */}
 <section
-  ref={heroRef}
-  className="relative min-h-screen flex items-center overflow-hidden bg-[#0f110c]"
-  aria-label="Glafnic Soap Hero Section"
->
-  {/* Background Image Container */}
-  <div className="absolute inset-0 z-0">
-    <Image
-      src="/images/g2.jpg" // Replace with an image of organic soap bars with botanical leaves
-      alt="Glafnic Organic Soap and Botanicals"
-      fill
-      priority
-      sizes="100vw"
-      className="object-cover object-right md:object-center"
-    />
-    {/* Dynamic Overlays for Readability */}
-    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent md:from-black/70 md:via-black/20" />
-    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-  </div>
+      className="relative min-h-screen flex items-center overflow-hidden bg-[#0f110c]"
+      aria-label="Glafnic Soap Hero Slider"
+    >
+      {/* Background Slides Container */}
+      <div className="absolute inset-0 z-0">
+        {heroSlides.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              currentSlide === index ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+<Image
+  src={slide.bgImage}
+  alt="Hold the Nature – Glafnic"
+  fill
+  priority
+  sizes="100vw"
+  className="object-cover object-[70%_25%]"
+/>
 
-  {/* Main Content Container */}
-  <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
-    <div className="max-w-2xl text-left">
-      
-      {/* Brand Header */}
-      <div className="space-y-1 mb-8">
-        <div className="flex items-center gap-3">
-          <span className="h-[1px] w-10 bg-emerald-400/60"></span>
-          <p className="text-emerald-100/80 tracking-[0.4em] uppercase text-xs font-medium">
-            Glainic™ Essentials
-          </p>
-        </div>
-        <p className="italic text-white/60 text-base md:text-lg font-light pl-13">
-          Pure. Gentle. Naturally Beautiful.
-        </p>
+
+
+
+            <div className={`absolute inset-0 bg-gradient-to-r ${slide.overlay}`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          </div>
+        ))}
       </div>
 
-      {/* Hero Headline */}
-      <h1 className="font-serif text-white leading-[1.1] mb-6">
-        <span className="block text-6xl md:text-7xl lg:text-8xl font-light tracking-tight">
-          Hold
+      {/* Slide Navigation Buttons */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 md:left-8 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group"
+        aria-label="Previous slide"
+      >
+        <svg className="w-5 h-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 md:right-8 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group"
+        aria-label="Next slide"
+      >
+        <svg className="w-5 h-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      {/* Slide Indicators */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+        {heroSlides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              currentSlide === index 
+                ? 'bg-white w-8' 
+                : 'bg-white/50 hover:bg-white/80'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* Main Content Container */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
+        {heroSlides.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`transition-all duration-1000 ease-out transform ${
+              currentSlide === index
+                ? 'opacity-100 translate-x-0 relative'
+                : 'opacity-0 -translate-x-20 absolute pointer-events-none'
+            }`}
+          >
+            <div className="max-w-2xl text-left">
+              {/* Brand Header */}
+              <div className="space-y-1 mb-8">
+                <div className="flex items-center gap-3">
+                  <span className={`h-[1px] w-10 bg-${slide.accentColor}-400/60`}></span>
+                  <p className="text-white/80 tracking-[0.4em] uppercase text-xs font-medium">
+                    {slide.subtitle}
+                  </p>
+                </div>
+                <p className="italic text-white/60 text-base md:text-lg font-light pl-12">
+                  {slide.tagline}
+                </p>
+              </div>
+
+              {/* Hero Headline */}
+              <h1 className="font-serif text-white leading-[1.1] mb-6">
+                <span className="block text-6xl md:text-7xl lg:text-8xl font-light tracking-tight">
+                  {slide.titleLine1}
+                </span>
+                <span className="block text-5xl md:text-6xl lg:text-7xl italic font-extralight text-white/90 ml-4 md:ml-12">
+                  {slide.titleLine2}
+                </span>
+              </h1>
+
+              {/* Description Text */}
+              <div className="space-y-4 max-w-lg mb-10">
+                <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed">
+                  {slide.description}
+                </p>
+                <div className="flex items-center gap-2 text-white/50 text-sm tracking-wide">
+                  <span className={`w-2 h-2 rounded-full bg-${slide.accentColor}-500 animate-pulse`}></span>
+                  Newly Launched Collection
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Minimalist Scroll Indicator */}
+      <div className="absolute bottom-12 left-6 md:left-12 hidden md:flex items-center gap-4">
+        <div className="w-[1px] h-16 bg-gradient-to-b from-white/60 to-transparent" />
+        <span className="text-[9px] text-white/40 tracking-[0.5em] uppercase [writing-mode:vertical-lr]">
+          Scroll to discover
         </span>
-        <span className="block text-5xl md:text-6xl lg:text-7xl italic font-extralight text-emerald-50/90 ml-4 md:ml-12">
-          the Nature
-        </span>
-      </h1>
+      </div>
+    </section>
 
-      {/* Description Text */}
-      <div className="space-y-4 max-w-lg mb-10">
-        <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed">
-          The art of cleansing redefined. Experience a ritual of nature, 
-          meticulously crafted for your skin's soul.
-        </p>
-        <div className="flex items-center gap-2 text-white/50 text-sm tracking-wide">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Newly Launched Collection
+      {/* Explore Soaps Section */}
+      <section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-gray-900 mb-3">Explore soaps</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Explore our carefully curated soaps
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {featuredCategories.map((category, index) => (
+              <div 
+                key={category._id} 
+                className="animate-fade-in-up" 
+                style={{ 
+                  animationDelay: `${index * 300}ms`,
+                  animationFillMode: 'both'
+                }}
+              >
+                {/* Category Header */}
+                <div className="relative flex items-center justify-center mb-4">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 text-center">
+                    {category.name}
+                  </h3>
+                  <button 
+                    onClick={() => router.push(`/products?category=${category.slug}`)}
+                    className="absolute right-0 inline-flex items-center gap-0.5 sm:gap-1 bg-gray-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:bg-gray-800 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
+                    aria-label={`View more ${category.name} soaps`}
+                  >
+                    View More
+                    <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  </button>
+                </div>
+
+                {/* CHANGED: limit from 18 to 12 */}
+                <ProductGrid 
+                  category={category._id} 
+                  limit={8} 
+                  hideFilters={true}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-5">
-        <button
-          onClick={navigateToProducts}
-          className="bg-white hover:bg-emerald-50 text-black px-10 py-4 rounded-full font-bold transition-all shadow-2xl hover:shadow-emerald-500/20 active:scale-95"
-        >
-          Explore Collection
-        </button>
-
-        <button
-          onClick={() => router.push('/about')}
-          className="group flex items-center gap-3 text-white border-b border-white/20 hover:border-white transition-all py-2"
-        >
-          <span className="font-medium">Learn Our Story</span>
-          <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  {/* Minimalist Scroll Indicator */}
-  <div className="absolute bottom-12 left-6 md:left-12 hidden md:flex items-center gap-4">
-    <div className="w-[1px] h-16 bg-gradient-to-b from-white/60 to-transparent" />
-    <span className="text-[9px] text-white/40 tracking-[0.5em] uppercase vertical-text">
-      Scroll to discover
-    </span>
-  </div>
-</section>
+      </section>
 
       {/* Skin-vestment Section */}
       <section className="bg-[#f6f5f2] py-28" aria-label="Our Skin-Vestment Philosophy">
@@ -189,53 +355,6 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                 For a better you, <br /> today &amp; always
               </h3>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Explore Soaps Section */}
-      <section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">Explore soaps</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Explore our carefully curated soaps
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            {featuredCategories.map((category, index) => (
-              <div 
-                key={category._id} 
-                className="animate-fade-in-up" 
-                style={{ 
-                  animationDelay: `${index * 300}ms`,
-                  animationFillMode: 'both'
-                }}
-              >
-                {/* Category Header */}
-                <div className="relative flex items-center justify-center mb-4">
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 text-center">
-                    {category.name}
-                  </h3>
-                  <button 
-                    onClick={() => router.push(`/products?category=${category.slug}`)}
-                    className="absolute right-0 inline-flex items-center gap-0.5 sm:gap-1 bg-gray-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:bg-gray-800 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
-                    aria-label={`View more ${category.name} soaps`}
-                  >
-                    View More
-                    <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                  </button>
-                </div>
-
-                {/* CHANGED: limit from 18 to 12 */}
-                <ProductGrid 
-                  category={category._id} 
-                  limit={12} 
-                  hideFilters={true}
-                />
-              </div>
-            ))}
           </div>
         </div>
       </section>

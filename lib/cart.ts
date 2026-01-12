@@ -32,7 +32,6 @@ export async function getCart(): Promise<Cart> {
     'Content-Type': 'application/json',
   };
 
-  // Add authorization header if token exists
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -47,14 +46,13 @@ export async function getCart(): Promise<Cart> {
   return response.json();
 }
 
-export async function addToCart(cartData: AddToCartData): Promise<Cart> {
+export async function addToCart(cartData: AddToCartData & { variantId?: string }): Promise<Cart> {
   const token = getToken();
   
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
 
-  // ✅ FIXED: Add authorization header if token exists
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -63,11 +61,10 @@ export async function addToCart(cartData: AddToCartData): Promise<Cart> {
     method: 'POST',
     headers,
     body: JSON.stringify(cartData),
-    credentials: 'include', // ✅ ADDED credentials
+    credentials: 'include',
   });
 
   await handleApiError(response, 'Failed to add item to cart');
-  
   return response.json();
 }
 

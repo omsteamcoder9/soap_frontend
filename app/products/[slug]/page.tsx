@@ -32,7 +32,7 @@ export async function generateMetadata(props: ProductDetailPageProps): Promise<M
     
     // Meta Description
     const metaDescription = product.metaDescription || 
-      `${product.description.substring(0, 150)}... Buy ${product.name} at ₹${product.price.toLocaleString('en-IN')}. Free shipping & 100% organic guarantee.`;
+      `${product.description.substring(0, 150)}... Buy ${product.name} at ₹${product.basePrice.toLocaleString('en-IN')}. Free shipping & 100% organic guarantee.`;
     
     // Canonical URL
     const canonicalUrl = product.canonicalUrl || `${siteUrl}/products/${product.slug}`;
@@ -84,7 +84,7 @@ export async function generateMetadata(props: ProductDetailPageProps): Promise<M
         images: [ogImage],
       },
       other: {
-        'product:price:amount': product.price.toString(),
+        'product:price:amount': product.basePrice.toString(),
         'product:price:currency': 'INR',
         'product:availability': product.stock > 0 ? 'in stock' : 'out of stock',
         'product:condition': 'new',

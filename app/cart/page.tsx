@@ -79,18 +79,23 @@ export default function CartPage() {
                   <div key={item._id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border-b border-gray-200 pb-4 sm:pb-6">
                     {/* Product Image and Info - Mobile Layout */}
                     <div className="flex items-center gap-3 sm:gap-4">
-                   <Image
-  src={`${process.env.NEXT_PUBLIC_BASE_URL}${item.product.images[0].image}`}
-  alt={item.product.name}
-  width={80}
-  height={80}
-  className="w-16 h-16 object-cover rounded-lg"
-/>
+                      <Image
+                        src={`${process.env.NEXT_PUBLIC_BASE_URL}${item.product.images[0].image}`}
+                        alt={item.product.name}
+                        width={80}
+                        height={80}
+                        className="w-16 h-16 object-cover rounded-lg"
+                      />
                       
                       {/* Product Info - Mobile Layout */}
                       <div className="sm:hidden flex-grow">
                         <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{item.product.name}</h3>
-                        <p className="text-gray-600 text-xs">₹{item.product.price}</p>
+                        {/* ✅ SHOW SELECTED PACK/VARIANT */}
+                        {item.selectedVariant && (
+                          <p className="text-blue-600 text-xs font-medium">📦 Pack: {item.selectedVariant.variantName}</p>
+                        )}
+                        {/* ✅ USE VARIANT PRICE IF EXISTS */}
+                        <p className="text-gray-600 text-xs">₹{item.price}</p>
                         {item.product.stock < 10 && (
                           <p className="text-orange-600 text-xs mt-1">
                             Only {item.product.stock} left
@@ -102,7 +107,12 @@ export default function CartPage() {
                     {/* Product Info - Desktop Layout */}
                     <div className="hidden sm:block flex-grow">
                       <h3 className="font-semibold text-gray-900">{item.product.name}</h3>
-                      <p className="text-gray-600 text-sm">₹{item.product.price}</p>
+                      {/* ✅ SHOW SELECTED PACK/VARIANT */}
+                      {item.selectedVariant && (
+                        <p className="text-blue-600 text-sm font-medium">📦 Pack: {item.selectedVariant.variantName}</p>
+                      )}
+                      {/* ✅ USE VARIANT PRICE IF EXISTS */}
+                      <p className="text-gray-600 text-sm">₹{item.price}</p>
                       {item.product.stock < 10 && (
                         <p className="text-orange-600 text-xs mt-1">
                           Only {item.product.stock} left in stock
@@ -132,7 +142,8 @@ export default function CartPage() {
                       
                       {/* Price and Remove - Mobile Layout */}
                       <div className="sm:hidden text-right">
-                        <p className="font-semibold text-gray-900 text-sm">₹{(item.product.price * item.quantity).toFixed(2)}</p>
+                        {/* ✅ CALCULATE WITH VARIANT PRICE */}
+                        <p className="font-semibold text-gray-900 text-sm">₹{(item.price * item.quantity).toFixed(2)}</p>
                         <button 
                           onClick={() => removeFromCart(item._id)}
                           className="text-red-600 hover:text-red-800 text-xs transition-colors duration-200 cursor-pointer"
@@ -144,7 +155,8 @@ export default function CartPage() {
                     
                     {/* Price and Remove - Desktop Layout */}
                     <div className="hidden sm:block text-right min-w-[100px]">
-                      <p className="font-semibold text-gray-900">₹{(item.product.price * item.quantity).toFixed(2)}</p>
+                      {/* ✅ CALCULATE WITH VARIANT PRICE */}
+                      <p className="font-semibold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
                       <button 
                         onClick={() => removeFromCart(item._id)}
                         className="text-red-600 hover:text-red-800 text-sm transition-colors duration-200 cursor-pointer"

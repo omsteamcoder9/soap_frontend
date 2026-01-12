@@ -1,20 +1,18 @@
-// app/profile/page.tsx - CORRECTED VERSION
+// app/profile/page.tsx - COMPLETE CORRECTED VERSION
 'use client';
 
 import { useState, useEffect } from 'react';
 import { getUserOrders } from '@/lib/order-api';
-import { Order } from '@/types/order';
+import { Order, OrderItem } from '@/types/order';
 import { useRouter } from 'next/navigation';
 
 // Cancel order function for profile page
-// Option 1: Strongly typed interface
 interface CancelOrderRequest {
   cancellationReason?: string;
 }
 
 const cancelOrder = async (orderId: string, token: string, cancellationReason?: string): Promise<Order> => {
   try {
-    // Create properly typed request data
     const cancelData: CancelOrderRequest = {};
     if (cancellationReason) {
       cancelData.cancellationReason = cancellationReason;
@@ -40,6 +38,56 @@ const cancelOrder = async (orderId: string, token: string, cancellationReason?: 
     console.error('Error cancelling order:', error);
     throw error;
   }
+};
+
+// ✅ ADDED: Helper function to calculate order total
+const calculateOrderTotal = (order: Order): number => {
+  // First try finalAmount (most accurate)
+  if (order.finalAmount && order.finalAmount > 0) {
+    return order.finalAmount;
+  }
+  
+  // Then try totalAmount
+  if (order.totalAmount && order.totalAmount > 0) {
+    return order.totalAmount;
+  }
+  
+  // Calculate from products if available
+  if (order.products && order.products.length > 0) {
+    return order.products.reduce((total, item) => {
+      // Use item.price (actual price paid) if available
+      const itemPrice = item.price || item.product?.price || 0;
+      return total + (itemPrice * item.quantity);
+    }, 0);
+  }
+  
+  return 0;
+};
+
+// ✅ ADDED: Helper function to calculate subtotal from products
+const calculateSubtotal = (products: OrderItem[]): number => {
+  if (!products || products.length === 0) return 0;
+  
+  return products.reduce((total, item) => {
+    const itemPrice = item.price || item.product?.price || 0;
+    return total + (itemPrice * item.quantity);
+  }, 0);
+};
+
+// ✅ ADDED: Helper function to get product display name with variant
+const getProductDisplayName = (item: OrderItem): string => {
+  // First try item.name (contains product + variant for guest orders)
+  if (item.name) {
+    return item.name;
+  }
+  
+  // Then try product.name + variantName
+  const productName = item.product?.name || 'Product';
+  if (item.variantName) {
+    return `${productName} - ${item.variantName}`;
+  }
+  
+  return productName;
 };
 
 export default function UserProfile() {
@@ -72,7 +120,30 @@ export default function UserProfile() {
           return;
         }
 
+        console.log('🔄 Fetching user orders...');
         const userOrders = await getUserOrders(token);
+        
+        console.log('📦 Orders fetched:', userOrders);
+        
+        // Log order details for debugging
+        userOrders.forEach((order, index) => {
+          console.log(`Order ${index + 1}:`, {
+            orderId: order.orderId,
+            isGuestOrder: order.isGuestOrder,
+            totalAmount: order.totalAmount,
+            finalAmount: order.finalAmount,
+            subtotal: order.subtotal,
+            productsCount: order.products?.length,
+            products: order.products?.map(p => ({
+              name: p.name, // This should contain variant for guest orders
+              productName: p.product?.name,
+              variantName: p.variantName,
+              price: p.price,
+              quantity: p.quantity,
+              itemTotal: (p.price || 0) * p.quantity
+            }))
+          });
+        });
         
         setOrders(userOrders);
         
@@ -263,6 +334,12 @@ export default function UserProfile() {
     });
   };
 
+  // ✅ ADDED: Get item total for display
+  const getItemTotal = (item: OrderItem): number => {
+    const price = item.price || item.product?.price || 0;
+    return price * item.quantity;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f2f2f2] py-12">
@@ -347,7 +424,7 @@ export default function UserProfile() {
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Total Spent</span>
                       <span className="font-semibold text-gray-900">
-                        ₹{orders.reduce((total, order) => total + order.totalAmount, 0).toFixed(2)}
+                        ₹{orders.reduce((total, order) => total + calculateOrderTotal(order), 0).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -426,124 +503,148 @@ export default function UserProfile() {
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200">
-                    {activeOrders.map((order) => (
-                      <div
-                        key={order._id}
-                        className={`p-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group ${
-                          selectedOrder?._id === order._id ? 'bg-gray-100 border-l-4 border-l-gray-700' : ''
-                        }`}
-                        onClick={() => fetchOrderDetails(order._id)}
-                      >
-                        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
-                          <div className="flex-1">
-                            <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-3">
-                              <h3 className={`text-lg font-semibold group-hover:text-gray-700 transition-colors ${
-                                selectedOrder?._id === order._id ? 'text-gray-800' : 'text-gray-900'
-                              }`}>
-                                Order #{order.orderId || order._id?.slice(-8)}
-                              </h3>
-                              <div className="flex flex-wrap gap-2">
-                                {getStatusBadge(order.orderStatus, 'order')}
-                                {getStatusBadge(order.paymentStatus, 'payment')}
+                    {activeOrders.map((order) => {
+                      // ✅ FIXED: Calculate order total properly
+                      const orderTotal = calculateOrderTotal(order);
+                      const subtotal = calculateSubtotal(order.products || []);
+                      
+                      return (
+                        <div
+                          key={order._id}
+                          className={`p-6 hover:bg-gray-50 cursor-pointer transition-all duration-200 group ${
+                            selectedOrder?._id === order._id ? 'bg-gray-100 border-l-4 border-l-gray-700' : ''
+                          }`}
+                          onClick={() => fetchOrderDetails(order._id)}
+                        >
+                          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                            <div className="flex-1">
+                              <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-3">
+                                <h3 className={`text-lg font-semibold group-hover:text-gray-700 transition-colors ${
+                                  selectedOrder?._id === order._id ? 'text-gray-800' : 'text-gray-900'
+                                }`}>
+                                  Order #{order.orderId || order._id?.slice(-8)}
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                  {getStatusBadge(order.orderStatus, 'order')}
+                                  {getStatusBadge(order.paymentStatus, 'payment')}
+                                </div>
+                              </div>
+                              
+                              <p className="text-gray-600 mb-3 text-sm">
+                                Placed on {formatDate(order.createdAt)}
+                              </p>
+                              
+                              <div className="flex flex-wrap items-center gap-3 text-sm">
+                                <span className="text-gray-600">{order.products?.length || 0} items</span>
+                                <span className="text-gray-400">•</span>
+                                {/* ✅ FIXED: Show correct price */}
+                                <span className="font-semibold text-gray-900">
+                                  ₹{orderTotal.toFixed(2)}
+                                </span>
+                                {orderTotal > 0 && subtotal > 0 && orderTotal !== subtotal && (
+                                  <>
+                                    <span className="text-gray-400">•</span>
+                                    <span className="text-gray-500 line-through text-xs">
+                                      ₹{subtotal.toFixed(2)}
+                                    </span>
+                                  </>
+                                )}
+                                <span className="text-gray-400">•</span>
+                                <span className="text-gray-600 capitalize">{order.paymentMethod}</span>
+                              </div>
+
+                              {/* Order Items Preview */}
+                              <div className="mt-4 flex flex-wrap gap-3">
+                                {order.products?.slice(0, 3).map((item, index) => {
+                                  const itemTotal = getItemTotal(item);
+                                  
+                                  return (
+                                    <div key={index} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
+                                      {/* ✅ FIX 1: Use getProductDisplayName helper */}
+                                      <span className="text-sm text-gray-700">
+                                        {getProductDisplayName(item)}
+                                      </span>
+                                      
+                                      {item.selectedSize && (
+                                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                                          Size: {item.selectedSize}
+                                        </span>
+                                      )}
+                                      <span className="text-xs text-gray-500 bg-white px-1 rounded border">
+                                        x{item.quantity}
+                                      </span>
+                                      <span className="text-xs font-semibold text-gray-900">
+                                        ₹{itemTotal.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                                {order.products && order.products.length > 3 && (
+                                  <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
+                                    <span className="text-sm text-gray-700">
+                                      +{order.products.length - 3} more
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
-                            
-                            <p className="text-gray-600 mb-3 text-sm">
-                              Placed on {formatDate(order.createdAt)}
-                            </p>
-                            
-                            <div className="flex flex-wrap items-center gap-3 text-sm">
-                              <span className="text-gray-600">{order.products?.length || 0} items</span>
-                              <span className="text-gray-400">•</span>
-                              <span className="font-semibold text-gray-900">
-                                ₹{order.totalAmount.toFixed(2)}
-                              </span>
-                              <span className="text-gray-400">•</span>
-                              <span className="text-gray-600 capitalize">{order.paymentMethod}</span>
-                            </div>
 
-                            {/* Order Items Preview */}
-                            <div className="mt-4 flex flex-wrap gap-3">
-                              {order.products?.slice(0, 3).map((item, index) => (
-                                <div key={index} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
-                                  <span className="text-sm text-gray-700">
-                                    {item.product?.name || item.name || 'Product'}
-                                  </span>
-                                  {item.selectedSize && (
-                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                                      Size: {item.selectedSize}
-                                    </span>
+                            {/* Action Buttons */}
+                            <div className="flex flex-col gap-2 lg:items-end">
+                              {/* Cancel Button */}
+                              {canCancelOrder(order) && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelOrder(order);
+                                  }}
+                                  disabled={cancellingOrderId === order._id}
+                                  className="border border-red-600 text-red-600 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors font-medium text-sm flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {cancellingOrderId === order._id ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                                      Cancelling...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                      Cancel Order
+                                    </>
                                   )}
-                                  <span className="text-xs text-gray-500 bg-white px-1 rounded border">
-                                    x{item.quantity}
-                                  </span>
-                                </div>
-                              ))}
-                              {order.products && order.products.length > 3 && (
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
-                                  <span className="text-sm text-gray-700">
-                                    +{order.products.length - 3} more
-                                  </span>
-                                </div>
+                                </button>
                               )}
-                            </div>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex flex-col gap-2 lg:items-end">
-                            {/* Cancel Button */}
-                            {canCancelOrder(order) && (
+                              
+                              {/* View PDF Button */}
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleCancelOrder(order);
+                                  handleViewPDF(order._id);
                                 }}
-                                disabled={cancellingOrderId === order._id}
-                                className="border border-red-600 text-red-600 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-colors font-medium text-sm flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={pdfLoading}
+                                className="border border-green-600 text-green-600 px-4 py-2 rounded-lg hover:bg-green-600 hover:text-white transition-colors font-medium text-sm flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {cancellingOrderId === order._id ? (
+                                {pdfLoading ? (
                                   <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                                    Cancelling...
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                                    Loading...
                                   </>
                                 ) : (
                                   <>
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
                                     </svg>
-                                    Cancel Order
+                                    View PDF
                                   </>
                                 )}
                               </button>
-                            )}
-                            
-                            {/* View PDF Button */}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewPDF(order._id);
-                              }}
-                              disabled={pdfLoading}
-                              className="border border-green-600 text-green-600 px-4 py-2 rounded-lg hover:bg-green-600 hover:text-white transition-colors font-medium text-sm flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {pdfLoading ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                                  Loading...
-                                </>
-                              ) : (
-                                <>
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                                  </svg>
-                                  View PDF
-                                </>
-                              )}
-                            </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -700,83 +801,95 @@ export default function UserProfile() {
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200">
-                    {cancelledOrders.map((order) => (
-                      <div
-                        key={order._id}
-                        className="p-6 hover:bg-gray-50 cursor-pointer transition-all duration-200"
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setShowCancelledOrdersModal(false);
-                        }}
-                      >
-                        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
-                          <div className="flex-1">
-                            <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-3">
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                Order #{order.orderId || order._id?.slice(-8)}
-                              </h3>
-                              <div className="flex flex-wrap gap-2">
-                                {getStatusBadge(order.orderStatus, 'order')}
-                                {getStatusBadge(order.paymentStatus, 'payment')}
+                    {cancelledOrders.map((order) => {
+                      const orderTotal = calculateOrderTotal(order);
+                      
+                      return (
+                        <div
+                          key={order._id}
+                          className="p-6 hover:bg-gray-50 cursor-pointer transition-all duration-200"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setShowCancelledOrdersModal(false);
+                          }}
+                        >
+                          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                            <div className="flex-1">
+                              <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-3">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  Order #{order.orderId || order._id?.slice(-8)}
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                  {getStatusBadge(order.orderStatus, 'order')}
+                                  {getStatusBadge(order.paymentStatus, 'payment')}
+                                </div>
                               </div>
-                            </div>
-                            
-                            <p className="text-gray-600 mb-3 text-sm">
-                              Cancelled on {formatDate(order.updatedAt || order.createdAt)}
-                            </p>
-                            
-                            <div className="flex flex-wrap items-center gap-3 text-sm">
-                              <span className="text-gray-600">{order.products?.length || 0} items</span>
-                              <span className="text-gray-400">•</span>
-                              <span className="font-semibold text-gray-900">
-                                ₹{order.totalAmount.toFixed(2)}
-                              </span>
-                              <span className="text-gray-400">•</span>
-                              <span className="text-gray-600 capitalize">{order.paymentMethod}</span>
-                              <span className="text-gray-400">•</span>
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewPDF(order._id);
-                                }}
-                                className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 font-medium text-sm"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                                </svg>
-                                View PDF
-                              </button>
-                            </div>
+                              
+                              <p className="text-gray-600 mb-3 text-sm">
+                                Cancelled on {formatDate(order.updatedAt || order.createdAt)}
+                              </p>
+                              
+                              <div className="flex flex-wrap items-center gap-3 text-sm">
+                                <span className="text-gray-600">{order.products?.length || 0} items</span>
+                                <span className="text-gray-400">•</span>
+                                <span className="font-semibold text-gray-900">
+                                  ₹{orderTotal.toFixed(2)}
+                                </span>
+                                <span className="text-gray-400">•</span>
+                                <span className="text-gray-600 capitalize">{order.paymentMethod}</span>
+                                <span className="text-gray-400">•</span>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewPDF(order._id);
+                                  }}
+                                  className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 font-medium text-sm"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                                  </svg>
+                                  View PDF
+                                </button>
+                              </div>
 
-                            {/* Order Items Preview */}
-                            <div className="mt-4 flex flex-wrap gap-3">
-                              {order.products?.slice(0, 3).map((item, index) => (
-                                <div key={index} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
-                                  <span className="text-sm text-gray-700">
-                                    {item.product?.name || item.name || 'Product'}
-                                  </span>
-                                  {item.selectedSize && (
-                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                                      Size: {item.selectedSize}
+                              {/* Order Items Preview */}
+                              <div className="mt-4 flex flex-wrap gap-3">
+                                {order.products?.slice(0, 3).map((item, index) => {
+                                  const itemTotal = getItemTotal(item);
+                                  
+                                  return (
+                                    <div key={index} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
+                                      {/* ✅ FIX 2: Use getProductDisplayName in cancelled orders too */}
+                                      <span className="text-sm text-gray-700">
+                                        {getProductDisplayName(item)}
+                                      </span>
+                                      {item.selectedSize && (
+                                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                                          Size: {item.selectedSize}
+                                        </span>
+                                      )}
+                                      <span className="text-xs text-gray-500 bg-white px-1 rounded border">
+                                        x{item.quantity}
+                                      </span>
+                                      <span className="text-xs font-semibold text-gray-900">
+                                        ₹{itemTotal.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                                {order.products && order.products.length > 3 && (
+                                  <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
+                                    <span className="text-sm text-gray-700">
+                                      +{order.products.length - 3} more
                                     </span>
-                                  )}
-                                  <span className="text-xs text-gray-500 bg-white px-1 rounded border">
-                                    x{item.quantity}
-                                  </span>
-                                </div>
-                              ))}
-                              {order.products && order.products.length > 3 && (
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-300">
-                                  <span className="text-sm text-gray-700">
-                                    +{order.products.length - 3} more
-                                  </span>
-                                </div>
-                              )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

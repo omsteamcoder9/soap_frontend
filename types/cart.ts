@@ -1,11 +1,11 @@
-import { Product } from './product';
+import { Product, ProductVariant } from './product';
 
 export interface CartItem {
   _id: string;
   product: Product;
   quantity: number;
-  price: number; // ✅ IMPORTANT: Add price field
-  // ✅ REMOVED: selectedColor field
+  price: number;
+  selectedVariant?: ProductVariant; // ✅ Ensure this exists
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +23,7 @@ export interface Cart {
 export interface AddToCartData {
   productId: string;
   quantity: number;
+   variantId?: string; 
   // ✅ REMOVED: color parameter
 }
 

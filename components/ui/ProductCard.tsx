@@ -2,7 +2,7 @@ import { Product } from '@/types/product';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Eye } from 'lucide-react';
+import { ShoppingBag, Eye, CreditCard } from 'lucide-react'; // Added CreditCard icon
 import Image from 'next/image';
 
 interface ProductCardProps {
@@ -46,16 +46,35 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
 
+  // NEW: Handle Buy Now - Navigate to checkout with the product
+  const handleBuyNow = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    try {
+      // 1. Add product to cart (quantity: 1)
+      await addToCart(product, 1);
+      
+      // 2. Redirect to checkout page
+      router.push('/checkout');
+      
+    } catch (error) {
+      console.error('Failed to process Buy Now:', error);
+    }
+  };
+
   const isInCart = cart?.items?.some(item => 
     item.product._id === product._id
   ) || false;
 
   const isOutOfStock = product.stock <= 0;
 
-  // Get image URL
+  // ✅ Get image URL
   const imageUrl = product.images?.[0]?.image 
     ? `${process.env.NEXT_PUBLIC_BASE_URL}${product.images[0].image}`
     : '/placeholder-image.jpg';
+
+  // ✅ Get display price: use basePrice from Product interface with fallback
+  const displayPrice = product.basePrice || 0; // FIXED: Added fallback value
 
   return (
     <div 
@@ -122,9 +141,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Price and Stock Info - Reduced margin */}
         <div className="flex items-center justify-between mb-2 flex-col xs:flex-row gap-1 sm:gap-0 font-sans">
           <div className="flex items-center gap-2 w-full xs:w-auto justify-between xs:justify-start">
-            {/* Price display */}
+            {/* Price display - Changed from product.price to displayPrice */}
             <span className="text-base xs:text-lg sm:text-lg font-bold text-gray-900 font-sans">
-              ₹{formatPrice(product.price)}
+              ₹{formatPrice(displayPrice)}
             </span>
             
             {/* Stock badge - moved here for mobile */}
@@ -151,12 +170,22 @@ export default function ProductCard({ product }: ProductCardProps) {
         <button 
           onClick={handleAddToCart}
           disabled={isOutOfStock}
-          className="w-full py-2 px-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-gray-700 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-gray-500/25 text-xs xs:text-sm sm:text-sm font-sans transform hover:scale-105"
+          className="w-full py-2 px-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-gray-700 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-gray-500/25 text-xs xs:text-sm sm:text-sm font-sans transform hover:scale-105 cursor-pointer mb-2" // Added mb-2 for spacing
         >
           <ShoppingBag size={14} className="xs:w-4 xs:h-4 sm:w-4 sm:h-4" />
           <span className="text-xs xs:text-sm sm:text-sm">
             {!isOutOfStock ? 'Add to Cart' : 'Out of Stock'}
           </span>
+        </button>
+
+        {/* NEW: Buy Now Button - Below Add to Cart */}
+        <button 
+          onClick={handleBuyNow}
+          disabled={isOutOfStock}
+          className="w-full py-2 px-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-gray-700 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-gray-500/25 text-xs xs:text-sm sm:text-sm font-sans transform hover:scale-105 cursor-pointer"
+        >
+          <CreditCard size={14} className="xs:w-4 xs:h-4 sm:w-4 sm:h-4" />
+          <span className="text-xs xs:text-sm sm:text-sm">Buy Now</span>
         </button>
       </div>
     </div>

@@ -2,50 +2,60 @@
 
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
-import { Product } from '@/types/product';
+import { Product,ProductVariant } from '@/types/product';
 import { ShoppingBag, Check } from 'lucide-react';
 
 interface AddToCartButtonProps {
   product: Product;
+  selectedVariant?: ProductVariant;
 }
 
-export default function AddToCartButton({ product }: AddToCartButtonProps) {
+// Line 14 - Update props destructuring
+export default function AddToCartButton({ product, selectedVariant }: AddToCartButtonProps) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart, loading, addingProductId, cart } = useCart();
 
   const isAdding = loading && addingProductId === product._id;
 
-  // ✅ FIXED: Simple cart item detection (no color check)
-  const isInCart = cart?.items?.some(item => 
-    item && item.product && item.product._id === product._id
-  ) || false;
+  // ✅ UPDATE: Check for same variant in cart
+  const isInCart = cart?.items?.some(item => {
+    const sameProduct = item.product._id === product._id;
+    const sameVariant = item.selectedVariant?.variantName === selectedVariant?.variantName;
+    return sameProduct && (!selectedVariant || sameVariant);
+  }) || false;
 
-  // ✅ FIXED: Calculate max quantity based on product stock
+  // ✅ UPDATE: Handle stock check based on variant
   const getMaxQuantity = () => {
+    if (selectedVariant) {
+      return Math.max(0, selectedVariant.stock);
+    }
     return Math.max(0, product.stock);
   };
 
   const handleAddToCart = async () => {
-    console.log('🛒 START - Adding to cart:', {
+    console.log('🛒 START - Adding to cart WITH VARIANT:', {
       productId: product._id,
       productName: product.name,
+      selectedVariant: selectedVariant, // ✅ Log variant
       quantity,
       timestamp: new Date().toISOString()
     });
 
     try {
-      // ✅ FIXED: Call addToCart without color parameter
-      console.log('📤 Calling addToCart function...');
-      const result = await addToCart(product, quantity);
-      console.log('✅ addToCart result:', result);
+      // ✅ FIXED: Pass selectedVariant to addToCart
+      console.log('📤 Calling addToCart function WITH VARIANT...');
+      await addToCart(product, quantity, selectedVariant);
+      console.log('✅ addToCart with variant successful');
     } catch (error) {
       console.error('❌ Error adding to cart:', error);
       alert('Failed to add item to cart. Please try again.');
     }
   };
 
+  // ✅ UPDATE: Check stock based on variant
   const maxQuantity = getMaxQuantity();
-  const isOutOfStock = product.stock <= 0;
+  const isOutOfStock = selectedVariant ? selectedVariant.stock <= 0 : product.stock <= 0;
+
 
   return (
     <div className="space-y-3">

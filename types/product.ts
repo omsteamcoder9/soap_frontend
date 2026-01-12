@@ -11,6 +11,22 @@ export interface ProductColor {
   _id?: string;
 }
 
+export interface ProductVariant {  // ✅ ADDED: Product Variants
+  variantName: string;
+  variantSlug?: string;
+  price: number;
+  originalPrice?: number;
+  description?: string;
+  stock: number;
+  images: ProductImage[];
+  sku?: string;
+  isDefault: boolean;
+  status: 'active' | 'inactive' | 'out-of-stock';
+  discountPercentage: number;
+  features?: string[];
+  _id?: string;
+}
+
 export interface ProductSpecification {
   key: string;
   value: string;
@@ -22,7 +38,7 @@ export interface Product {
   sNo: number;
   name: string;
   slug: string;
-  price: number;
+  basePrice: number; // ✅ CHANGED: from price to basePrice (to match backend)
   originalPrice?: number;
   description: string;
   category: string | {
@@ -37,11 +53,17 @@ export interface Product {
   stock: number;
   numberOfReviews: number;
   
-  // ✅ ADDED: Color variants
+  // ✅ KEEP: Color variants
   colors?: ProductColor[];
+  
+  // ✅ ADDED: Product variants (combo packs)
+  variants?: ProductVariant[];
   
   // ✅ ADDED: Specifications
   specifications?: ProductSpecification[];
+  
+  // ✅ ADDED: Key Features
+  keyFeatures?: string[];
   
   metaTitle?: string;
   metaDescription?: string;
@@ -83,7 +105,7 @@ export interface FilterOptions {
   categories?: string | string[];
   minPrice?: number;
   maxPrice?: number;
-  // ✅ UPDATED: Color filtering
+  // ✅ KEEP: Color filtering
   colors?: string[];
   featured?: boolean;
   status?: string;
@@ -126,16 +148,23 @@ export interface PriceRangesResponse {
   data: PriceRange[];
 }
 
-// ✅ ADDED: Product creation/update interfaces
+// ✅ UPDATED: Product creation/update interfaces
 export interface CreateProductData {
   name: string;
-  price: number;
+  basePrice: number; // ✅ CHANGED: from price to basePrice
   description: string;
   category: string;
   seller: string;
   stock?: number;
+  
+  // ✅ KEEP: Color variants
   colors?: ProductColor[];
+  
+  // ✅ ADDED: Product variants
+  variants?: ProductVariant[];
+  
   specifications?: ProductSpecification[];
+  keyFeatures?: string[];
   images?: File[];
   slug?: string;
   rating?: number;
@@ -156,7 +185,7 @@ export interface UpdateProductData extends Partial<CreateProductData> {
   _id: string;
 }
 
-// ✅ ADDED: Color filter option for frontend
+// ✅ KEEP: Color filter option for frontend
 export interface ColorFilterOption {
   name: string;
   code: string;
@@ -169,9 +198,10 @@ export interface ProductDetailResponse {
   data: Product;
 }
 
-// ✅ UPDATED: Cart product interface with selected color
-export interface CartProduct extends Omit<Product, 'colors'> {
+// ✅ UPDATED: Cart product interface with selected color AND variant
+export interface CartProduct extends Omit<Product, 'colors' | 'variants'> {
   selectedColor?: ProductColor;
+  selectedVariant?: ProductVariant; // ✅ ADDED: Support for variant selection
   quantity: number;
 }
 

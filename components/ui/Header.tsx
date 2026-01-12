@@ -21,7 +21,8 @@ interface SearchProduct {
   _id: string;
   name: string;
   slug: string;
-  price: number;
+  // ✅ CHANGED: price to basePrice
+  basePrice: number;
   image: string | null;
   category: string;
   featured: boolean;
@@ -408,7 +409,8 @@ export default function Header() {
                                         <p className="text-sm font-medium text-white truncate">{product.name}</p>
                                         <div className="flex items-center justify-between">
                                           <p className="text-xs text-gray-300">{product.category}</p>
-                                          <p className="text-white font-medium text-sm">₹{product.price}</p>
+                                          {/* ✅ CHANGED: product.price to product.basePrice */}
+                                          <p className="text-white font-medium text-sm">₹{product.basePrice}</p>
                                         </div>
                                       </div>
                                     </div>
@@ -510,7 +512,8 @@ export default function Header() {
                                         <p className="text-sm font-medium text-white truncate">{product.name}</p>
                                         <div className="flex items-center justify-between">
                                           <p className="text-xs text-gray-300">{product.category}</p>
-                                          <p className="text-white font-medium text-sm">₹{product.price}</p>
+                                          {/* ✅ CHANGED: product.price to product.basePrice */}
+                                          <p className="text-white font-medium text-sm">₹{product.basePrice}</p>
                                         </div>
                                       </div>
                                     </div>
@@ -553,7 +556,7 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
                 {cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold shadow border border-red-600">
+                  <span className="absolute -top-1 -right-1 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold  ">
                     {cartItemsCount > 9 ? '9+' : cartItemsCount}
                   </span>
                 )}
@@ -585,14 +588,13 @@ export default function Header() {
 
                     {/* Dropdown Menu */}
                     {showDropdown && (
-                      <div className="absolute right-0 mt-2 w-48 bg-gray-600 rounded-lg shadow-xl py-2 z-50 border border-gray-500">
-                        <div className="px-3 py-2 border-b border-gray-500">
+<div className="absolute right-0 mt-4 w-48 bg-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-600">                        <div className="px-3 py-2 border-b border-gray-500">
                           <p className="text-white font-bold text-sm truncate">{user.name || user.email}</p>
-                          <p className="text-gray-300 text-xs">Welcome back!</p>
+                          <p className="text-white text-xs">Welcome back!</p>
                         </div>
                         <Link
                           href="/profile"
-                          className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-200 hover:bg-gray-500 hover:text-white transition-all duration-300 cursor-pointer"
+                          className="flex items-center space-x-2 px-3 py-2 text-sm text-white cursor-pointer"
                           onClick={() => setShowDropdown(false)}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -602,7 +604,7 @@ export default function Header() {
                         </Link>
                         <button
                           onClick={handlelogo2ut}
-                          className="flex items-center space-x-2 w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-red-700 hover:text-white transition-all duration-300 rounded-b-lg cursor-pointer"
+                          className="flex items-center space-x-2 w-full text-left px-3 py-2 text-sm text-white hover:bg-red-700 hover:text-white transition-all duration-300 rounded-b-lg cursor-pointer"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

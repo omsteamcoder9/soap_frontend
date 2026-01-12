@@ -122,19 +122,21 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
       if (hasPriceFilter && productsData) {
         console.log('💰 Applying price filter on frontend:', filters.priceRange);
         const filtered = productsData.filter(product => {
+          // ✅ CHANGED: Use product.basePrice instead of product.price
+          const price = product.basePrice;
           switch (filters.priceRange) {
             case '100-200':
-              return product.price >= 100 && product.price <= 200;
+              return price >= 100 && price <= 200;
             case '200-300':
-              return product.price >= 200 && product.price <= 300;
+              return price >= 200 && price <= 300;
             case '300-400':
-              return product.price >= 300 && product.price <= 400;
+              return price >= 300 && price <= 400;
             case '400-500':
-              return product.price >= 400 && product.price <= 500;
+              return price >= 400 && price <= 500;
             case '500-600':
-              return product.price >= 500 && product.price <= 600;
+              return price >= 500 && price <= 600;
             case 'above-600':
-              return product.price > 600;
+              return price > 600;
             default:
               return true;
           }
@@ -144,7 +146,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
       }
 
       // APPLY LIMIT - Always 12 for home page, otherwise use limit prop
-      const finalLimit = isHomePage ? 12 : limit;
+      const finalLimit = isHomePage ? 8 : limit;
       if (finalLimit && productsData) {
         console.log(`🎯 Applying limit: ${finalLimit} products`);
         productsData = productsData.slice(0, finalLimit);
@@ -550,8 +552,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-6">
-            {products.map((product) => (
+<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 md:gap-6">            {products.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
           </div>

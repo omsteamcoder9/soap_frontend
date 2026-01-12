@@ -270,9 +270,12 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
             return;
           }
 
+          // ✅ FIXED: Include variant info for user orders
           const orderData = {
             products: cart.items.map(item => ({
               product: item.product._id,
+    
+              price: item.price, // ✅ ADDED: price from cart
               quantity: item.quantity
             })),
             shippingAddress: shippingAddress,
@@ -285,9 +288,11 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
           finalAmount = orderResult.finalAmount;
         } else {
           // Guest user
+          // ✅ FIXED: Include variant info for guest orders
           const orderData = {
             products: cart.items.map(item => ({
               product: item.product._id,
+              price: item.price, // ✅ ADDED: price from cart
               quantity: item.quantity
             })),
             shippingAddress: shippingAddress,
@@ -472,9 +477,12 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
           return;
         }
 
+        // ✅ FIXED: Include variant info for user orders
         const orderData = {
           products: cart.items.map(item => ({
             product: item.product._id,
+
+            price: item.price, // ✅ ADDED: price from cart
             quantity: item.quantity
           })),
           shippingAddress: shippingAddress,
@@ -485,9 +493,12 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
         const orderResult = await createUserOrder(orderData, token);
         orderId = orderResult.orderId;
       } else {
+        // ✅ FIXED: Include variant info for guest orders
         const orderData = {
           products: cart.items.map(item => ({
             product: item.product._id,
+
+            price: item.price, // ✅ ADDED: price from cart
             quantity: item.quantity
           })),
           shippingAddress: shippingAddress,
@@ -771,19 +782,7 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
 
           {/* Order Summary & Payment */}
           <div className="space-y-6">
-            {/* Special Offer */}
-            <div className="bg-[#f2f2f2] rounded-lg shadow-sm sm:shadow-md p-4 sm:p-6 border border-gray-300">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">Special Offer</h2>
-              <p className="text-gray-700 mb-4">
-                Get <span className="font-bold text-green-600">20% OFF</span> soap!
-              </p>
-              <Link
-                href="/products"
-                className="w-full bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-900 hover:to-gray-800 text-white py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center text-sm sm:text-base shadow-md hover:shadow-lg hover:shadow-gray-900/25"
-              >
-                View Offers Products
-              </Link>
-            </div>
+       
             
             {/* Order Summary */}
             <div className="bg-white rounded-lg shadow-sm sm:shadow-md p-4 sm:p-6 border border-gray-300">
@@ -792,13 +791,16 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
               <div className="space-y-3 mb-4">
                 {cart.items.map((item) => (
                   <div key={item._id} className="flex justify-between items-center border-b border-gray-200 pb-3">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <p className="font-medium text-sm">{item.product.name}</p>
-                        <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
-                      </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{item.product.name}</p>
+                      {/* ✅ ADD VARIANT NAME DISPLAY */}
+                      {item.selectedVariant && (
+                        <p className="text-xs text-blue-600 font-medium">📦 Pack: {item.selectedVariant.variantName}</p>
+                      )}
+                      <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
                     </div>
-                    <p className="font-semibold text-sm sm:text-base">₹{((item.product.price || 0) * item.quantity).toFixed(2)}</p>
+                    {/* ✅ CHANGED: Use item.price (variant price) instead of item.product.basePrice */}
+                    <p className="font-semibold text-sm sm:text-base">₹{((item.price || 0) * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
