@@ -9,7 +9,8 @@ import {
   CreateProductData,
   UpdateProductData,
   SingleProductResponse,
-  CreateProductResponse
+  CreateProductResponse,
+  ProductOfferInfo // ✅ ADDED
 } from '@/types/product';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -419,3 +420,191 @@ export function getActivePrice(product: Product, selectedVariant?: any): number 
   }
   return product.basePrice;
 }
+
+// ✅ OFFER-RELATED HELPER FUNCTIONS - ADDED HERE
+
+// ✅ Calculate discount price from original price and discount percentage
+export function calculateDiscountedPrice(originalPrice: number, discountPercentage: number): number {
+  const discountAmount = (originalPrice * discountPercentage) / 100;
+  return originalPrice - discountAmount;
+}
+
+// ✅ Calculate discount percentage from original and discounted prices
+export function calculateDiscountPercentage(originalPrice: number, discountedPrice: number): number {
+  if (originalPrice <= 0) return 0;
+  const discountAmount = originalPrice - discountedPrice;
+  const discountPercentage = (discountAmount / originalPrice) * 100;
+  return Math.round(discountPercentage * 100) / 100; // Round to 2 decimal places
+}
+
+// ✅ Get product offer information
+export function getProductOfferInfo(product: Product, variant?: any): ProductOfferInfo {
+  // Check variant first
+  if (variant) {
+    if (variant.originalPrice && variant.discountPercentage) {
+      const discountedPrice = calculateDiscountedPrice(variant.originalPrice, variant.discountPercentage);
+      return {
+        hasOffer: variant.discountPercentage > 0,
+        originalPrice: variant.originalPrice,
+        discountedPrice: discountedPrice,
+        discountPercentage: variant.discountPercentage,
+        discountAmount: variant.originalPrice - discountedPrice
+      };
+    }
+    
+    // If variant doesn't have offer, use product's offer
+    return getProductOfferInfo(product);
+  }
+  
+  // Check product offer
+  if (product.hasOffer && product.originalPrice && product.discountPercentage) {
+    const discountedPrice = calculateDiscountedPrice(product.originalPrice, product.discountPercentage);
+    return {
+      hasOffer: true,
+      originalPrice: product.originalPrice,
+      discountedPrice: discountedPrice,
+      discountPercentage: product.discountPercentage,
+      discountAmount: product.originalPrice - discountedPrice
+    };
+  }
+  
+  // No offer
+  return {
+    hasOffer: false,
+    originalPrice: product.basePrice,
+    discountedPrice: product.basePrice,
+    discountPercentage: 0,
+    discountAmount: 0
+  };
+}
+
+// ✅ Format price with strikethrough for offers
+export function formatPriceWithOffer(
+  originalPrice: number, 
+  discountedPrice: number
+): {
+  originalFormatted: string;
+  discountedFormatted: string;
+  discountPercentage: number;
+} {
+  const discountPercentage = calculateDiscountPercentage(originalPrice, discountedPrice);
+  
+  return {
+    originalFormatted: formatPrice(originalPrice),
+    discountedFormatted: formatPrice(discountedPrice),
+    discountPercentage: discountPercentage
+  };
+}
+
+// ✅ Check if product has an active offer
+export function hasActiveOffer(product: Product): boolean {
+  return !!(product.hasOffer && product.originalPrice && product.discountPercentage && product.discountPercentage > 0);
+}
+
+// ✅ Get display price for UI (shows offer if available)
+export function getDisplayPrice(product: Product, variant?: any): {
+  originalPrice: number;
+  currentPrice: number;
+  hasOffer: boolean;
+  discountPercentage: number;
+  formatted: {
+    original: string;
+    current: string;
+    discount: string;
+  };
+} {
+  const offerInfo = getProductOfferInfo(product, variant);
+  const formattedPrices = formatPriceWithOffer(offerInfo.originalPrice, offerInfo.discountedPrice);
+  
+  return {
+    originalPrice: offerInfo.originalPrice,
+    currentPrice: offerInfo.discountedPrice,
+    hasOffer: offerInfo.hasOffer,
+    discountPercentage: offerInfo.discountPercentage,
+    formatted: {
+      original: formattedPrices.originalFormatted,
+      current: formattedPrices.discountedFormatted,
+      discount: `${offerInfo.discountPercentage}% OFF`
+    }
+  };
+}
+
+// ✅ Get the best price (lowest price including offers)
+export function getBestPrice(product: Product): number {
+  let lowestPrice = product.basePrice;
+  
+  // Check product offer
+  if (product.hasOffer && product.originalPrice && product.discountPercentage) {
+    const discountedPrice = calculateDiscountedPrice(product.originalPrice, product.discountPercentage);
+    lowestPrice = Math.min(lowestPrice, discountedPrice);
+  }
+  
+  // Check variant prices
+  if (product.variants && product.variants.length > 0) {
+    product.variants.forEach(variant => {
+      let variantPrice = variant.price;
+      
+      // Check variant offer
+      if (variant.originalPrice && variant.discountPercentage) {
+        variantPrice = calculateDiscountedPrice(variant.originalPrice, variant.discountPercentage);
+      }
+      
+      lowestPrice = Math.min(lowestPrice, variantPrice);
+    });
+  }
+  
+  return lowestPrice;
+}
+// ✅ GET OFFER PRODUCTS - ADD THIS FUNCTION
+export async function getOfferProducts(filters: {
+  category?: string;
+  minDiscount?: number;
+  maxDiscount?: number;
+  limit?: number;
+  sort?: 'discount-desc' | 'price-asc' | 'price-desc' | 'new';
+} = {}): Promise<{
+  success: boolean;
+  data: Product[];
+  count: number;
+}> {
+  const params: APIParams = {};
+  
+  if (filters.category) params.category = filters.category;
+  if (filters.minDiscount !== undefined) params.minDiscount = filters.minDiscount;
+  if (filters.maxDiscount !== undefined) params.maxDiscount = filters.maxDiscount;
+  if (filters.limit) params.limit = filters.limit;
+  if (filters.sort) params.sort = filters.sort;
+
+  return fetchAPI<{
+    success: boolean;
+    data: Product[];
+    count: number;
+  }>('/products/offers', params);
+}
+
+// ✅ Add to FilterOptions type (optional)
+// In your types file, you can add:
+// export interface FilterOptions {
+//   // ... existing filters
+//   minDiscount?: number;
+//   maxDiscount?: number;
+//   sort?: 'discount-desc' | 'price-asc' | 'price-desc' | 'new';
+// }
+
+// ✅ DISCOUNT RANGE OPTIONS (add to constants)
+export const DISCOUNT_RANGES = [
+  { value: '10-20', label: '10% - 20% OFF', min: 10, max: 20 },
+  { value: '20-30', label: '20% - 30% OFF', min: 20, max: 30 },
+  { value: '30-50', label: '30% - 50% OFF', min: 30, max: 50 },
+  { value: '50-70', label: '50% - 70% OFF', min: 50, max: 70 },
+  { value: '70-90', label: '70% - 90% OFF', min: 70, max: 90 },
+  { value: 'above-90', label: 'Above 90% OFF', min: 90, max: 100 }
+];
+
+// ✅ SORT OPTIONS FOR OFFERS (add to constants)
+export const OFFER_SORT_OPTIONS = [
+  { value: 'discount-desc', label: 'Highest Discount' },
+  { value: 'price-asc', label: 'Price: Low to High' },
+  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'new', label: 'Newest Offers' }
+];

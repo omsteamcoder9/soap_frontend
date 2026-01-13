@@ -21,7 +21,6 @@ interface SearchProduct {
   _id: string;
   name: string;
   slug: string;
-  // ✅ CHANGED: price to basePrice
   basePrice: number;
   image: string | null;
   category: string;
@@ -238,6 +237,8 @@ export default function Header() {
 
   return (
     <>
+
+
       {/* Main Header - Using bg-gray-700 with white text */}
       <header className="bg-gray-700 shadow-lg border-b border-gray-600 font-sans">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6">
@@ -290,6 +291,17 @@ export default function Header() {
                   {category.name}
                 </Link>
               ))}
+              
+              {/* Offers Link in Desktop Navigation */}
+              <Link 
+                href="/offers" 
+                className="text-white hover:text-red-200 transition-all duration-300 font-medium px-3 py-2 rounded-lg hover:bg-gray-600 border-b-2 border-transparent hover:border-red-400 text-sm 2xl:text-base cursor-pointer flex items-center"
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                Offers
+              </Link>
               
               <Link 
                 href="/about" 
@@ -409,7 +421,6 @@ export default function Header() {
                                         <p className="text-sm font-medium text-white truncate">{product.name}</p>
                                         <div className="flex items-center justify-between">
                                           <p className="text-xs text-gray-300">{product.category}</p>
-                                          {/* ✅ CHANGED: product.price to product.basePrice */}
                                           <p className="text-white font-medium text-sm">₹{product.basePrice}</p>
                                         </div>
                                       </div>
@@ -512,7 +523,6 @@ export default function Header() {
                                         <p className="text-sm font-medium text-white truncate">{product.name}</p>
                                         <div className="flex items-center justify-between">
                                           <p className="text-xs text-gray-300">{product.category}</p>
-                                          {/* ✅ CHANGED: product.price to product.basePrice */}
                                           <p className="text-white font-medium text-sm">₹{product.basePrice}</p>
                                         </div>
                                       </div>
@@ -682,6 +692,18 @@ export default function Header() {
                         <span>Home</span>
                       </Link>
                       
+                      {/* Offers in Mobile Menu */}
+                      <Link 
+                        href="/offers" 
+                        className="flex items-center space-x-3 text-white hover:text-red-200 hover:bg-gray-600 transition-all duration-300 font-medium p-3 rounded-lg border border-transparent hover:border-red-400 text-sm cursor-pointer"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                        <span className="text-red-200 font-semibold">Special Offers</span>
+                      </Link>
+                      
                       {/* All Categories in Mobile Menu */}
                       {!loading && categories.map((category) => (
                         <Link
@@ -790,6 +812,22 @@ export default function Header() {
               </svg>
               <span className="text-[10px] font-medium truncate w-full text-center">Search</span>
             </button>
+
+            {/* Offers in Mobile Bottom Navigation */}
+            <Link 
+              href="/offers" 
+              className="flex flex-col items-center justify-center flex-1 p-1 text-white hover:text-red-200 transition-all duration-300 cursor-pointer min-w-0 relative"
+              onClick={() => setIsFooterVisible(false)}
+            >
+              <div className="relative">
+                <svg className="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                {/* Optional: Add a small red dot to indicate offers */}
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              </div>
+              <span className="text-[10px] font-medium truncate w-full text-center text-red-200">Offers</span>
+            </Link>
 
             {/* Products */}
             <Link 

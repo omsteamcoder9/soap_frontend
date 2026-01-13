@@ -2,7 +2,7 @@ import { Product } from '@/types/product';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Eye, CreditCard } from 'lucide-react'; // Added CreditCard icon
+import { ShoppingBag, Eye, CreditCard } from 'lucide-react';
 import Image from 'next/image';
 
 interface ProductCardProps {
@@ -14,12 +14,50 @@ const formatPrice = (price: number): string => {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+// ✅ Calculate discount percentage
+const calculateDiscountPercentage = (originalPrice: number, discountedPrice: number): number => {
+  if (originalPrice <= 0) return 0;
+  const discountAmount = originalPrice - discountedPrice;
+  const discountPercentage = (discountAmount / originalPrice) * 100;
+  return Math.round(discountPercentage * 100) / 100;
+};
+
+// ✅ Get product offer information
+const getProductOfferInfo = (product: Product): {
+  hasOffer: boolean;
+  originalPrice: number;
+  discountedPrice: number;
+  discountPercentage: number;
+} => {
+  if (product.hasOffer && product.originalPrice && product.discountPercentage) {
+    return {
+      hasOffer: true,
+      originalPrice: product.originalPrice,
+      discountedPrice: product.basePrice,
+      discountPercentage: product.discountPercentage
+    };
+  }
+  
+  return {
+    hasOffer: false,
+    originalPrice: product.basePrice,
+    discountedPrice: product.basePrice,
+    discountPercentage: 0
+  };
+};
+
 export default function ProductCard({ product }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   
-  const { addToCart, cart } = useCart(); // Removed loading and addingProductId
+  const { addToCart, cart } = useCart();
   const router = useRouter();
+
+  const offerInfo = getProductOfferInfo(product);
+  const actualDiscountPercentage = offerInfo.hasOffer 
+    ? calculateDiscountPercentage(offerInfo.originalPrice, offerInfo.discountedPrice)
+    : 0;
+  const hasValidOffer = offerInfo.hasOffer && offerInfo.originalPrice > offerInfo.discountedPrice;
 
   const handleCardClick = () => {
     router.push(`/products/${product.slug}`);
@@ -31,50 +69,33 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   const handleImageError = () => {
-    console.error('Image failed to load for product:', product.name);
     setImageError(true);
   };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
     try {
       await addToCart(product, 1);
-      console.log('✅ Product added to cart!');
     } catch (error) {
       console.error('Failed to add product to cart:', error);
     }
   };
 
-  // NEW: Handle Buy Now - Navigate to checkout with the product
   const handleBuyNow = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
     try {
-      // 1. Add product to cart (quantity: 1)
       await addToCart(product, 1);
-      
-      // 2. Redirect to checkout page
       router.push('/checkout');
-      
     } catch (error) {
       console.error('Failed to process Buy Now:', error);
     }
   };
 
-  const isInCart = cart?.items?.some(item => 
-    item.product._id === product._id
-  ) || false;
-
+  const isInCart = cart?.items?.some(item => item.product._id === product._id) || false;
   const isOutOfStock = product.stock <= 0;
-
-  // ✅ Get image URL
   const imageUrl = product.images?.[0]?.image 
     ? `${process.env.NEXT_PUBLIC_BASE_URL}${product.images[0].image}`
     : '/placeholder-image.jpg';
-
-  // ✅ Get display price: use basePrice from Product interface with fallback
-  const displayPrice = product.basePrice || 0; // FIXED: Added fallback value
 
   return (
     <div 
@@ -83,14 +104,12 @@ export default function ProductCard({ product }: ProductCardProps) {
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
     >
-      {/* Cart Badge - Top Right Corner */}
       {isInCart && (
-        <div className="absolute top-2 right-2 z-10 bg-gray-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-md font-sans">
+        <div className="absolute top-2 right-2 z-10 bg-gray-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-md">
           ✓
         </div>
       )}
 
-      {/* Product Image Container */}
       <div className="relative p-3 sm:p-4 pb-0 overflow-hidden">
         <div className="relative h-32 xs:h-36 sm:h-40 md:h-48 bg-gray-100 flex items-center justify-center overflow-hidden rounded-lg">
           <div className="relative w-full h-full">
@@ -99,22 +118,19 @@ export default function ProductCard({ product }: ProductCardProps) {
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className={`object-contain transition-all duration-300 ${
-                isHovered ? 'scale-110' : 'scale-100'
-              }`}
+              className={`object-contain transition-all duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}
               onError={handleImageError}
               priority={false}
               loading="lazy"
             />
           </div>
           
-          {/* Quick View Overlay - Hidden on mobile, shown on tablet+ */}
           <div className={`absolute inset-0 bg-black/20 flex items-center justify-center transition-all duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
           } hidden sm:flex`}>
             <button 
               onClick={handleQuickView}
-              className="bg-white text-gray-900 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 hover:bg-gray-50 border border-gray-200 hover:border-gray-300 text-xs sm:text-sm font-sans"
+              className="bg-white text-gray-900 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 hover:bg-gray-50 border border-gray-200 hover:border-gray-300 text-xs sm:text-sm"
             >
               <Eye size={14} className="sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Quick View</span>
@@ -131,46 +147,56 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
       
-      {/* Reduced padding and smaller product name */}
       <div className="p-3">
-        {/* Product Name - Fixed height with ellipsis for long names */}
-        <h3 className="font-semibold text-gray-900 mb-1 leading-tight line-clamp-2 text-xs font-sans h-8 overflow-hidden min-h-[2rem]">
-          {product.name}
-        </h3>
-        
-        {/* Price and Stock Info - Reduced margin */}
-        <div className="flex items-center justify-between mb-2 flex-col xs:flex-row gap-1 sm:gap-0 font-sans">
-          <div className="flex items-center gap-2 w-full xs:w-auto justify-between xs:justify-start">
-            {/* Price display - Changed from product.price to displayPrice */}
-            <span className="text-base xs:text-lg sm:text-lg font-bold text-gray-900 font-sans">
-              ₹{formatPrice(displayPrice)}
-            </span>
-            
-            {/* Stock badge - moved here for mobile */}
-            <span className={`px-2 py-1 text-xs rounded-full font-medium xs:hidden font-sans ${
-              !isOutOfStock 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {!isOutOfStock ? 'In stock' : 'Out of stock'}
-            </span>
-          </div>
+        {/* Product Name and Discount Percentage */}
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-semibold text-gray-900 leading-tight line-clamp-2 text-xs flex-1 pr-2">
+            {product.name}
+          </h3>
           
-          {/* Stock badge - hidden on mobile, shown on tablet+ */}
-          <span className={`px-2 py-1 text-xs rounded-full font-medium hidden xs:inline-block font-sans ${
-            !isOutOfStock 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {!isOutOfStock ? 'In stock' : 'Out of stock'}
-          </span>
+          {hasValidOffer && actualDiscountPercentage > 0 && (
+            <div className="bg-red-100 text-red-800 px-2 py-0.5 rounded-md text-xs font-bold whitespace-nowrap">
+              {Math.round(actualDiscountPercentage)}% OFF
+            </div>
+          )}
         </div>
+        
+        {/* Price and Stock - FIXED THE STRIKETHROUGH */}
+<div className="flex justify-between items-center mb-3">
+  <div className="flex items-center gap-1 sm:gap-2">
+    {/* Discounted Price - Larger on mobile too */}
+    <span className="text-sm xs:text-base sm:text-lg font-bold text-gray-900">
+      ₹{formatPrice(offerInfo.discountedPrice)}
+    </span>
+    
+    {/* Original Price - EXTRA SMALL on mobile, small on desktop */}
+    {hasValidOffer && (
+      <span 
+        className="text-[10px] xs:text-xs sm:text-sm text-gray-500 font-medium"
+        style={{ 
+          textDecoration: 'line-through',
+          textDecorationColor: '#6b7280',
+          textDecorationThickness: '0.5px'
+        }}
+      >
+        ₹{formatPrice(offerInfo.originalPrice)}
+      </span>
+    )}
+  </div>
+  
+  {/* Stock Badge - Also smaller on mobile */}
+  <span className={`px-1.5 py-0.5 xs:px-2 xs:py-1 text-[10px] xs:text-xs rounded-full font-medium whitespace-nowrap ${
+    !isOutOfStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+  }`}>
+    {!isOutOfStock ? 'In stock' : 'Out of stock'}
+  </span>
+</div>
 
         {/* Add to Cart Button */}
         <button 
           onClick={handleAddToCart}
           disabled={isOutOfStock}
-          className="w-full py-2 px-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-gray-700 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-gray-500/25 text-xs xs:text-sm sm:text-sm font-sans transform hover:scale-105 cursor-pointer mb-2" // Added mb-2 for spacing
+          className="w-full py-2 px-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-gray-700 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-gray-500/25 text-xs xs:text-sm sm:text-sm transform hover:scale-105 cursor-pointer mb-2"
         >
           <ShoppingBag size={14} className="xs:w-4 xs:h-4 sm:w-4 sm:h-4" />
           <span className="text-xs xs:text-sm sm:text-sm">
@@ -178,11 +204,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           </span>
         </button>
 
-        {/* NEW: Buy Now Button - Below Add to Cart */}
+        {/* Buy Now Button */}
         <button 
           onClick={handleBuyNow}
           disabled={isOutOfStock}
-          className="w-full py-2 px-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-gray-700 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-gray-500/25 text-xs xs:text-sm sm:text-sm font-sans transform hover:scale-105 cursor-pointer"
+          className="w-full py-2 px-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 bg-gray-700 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-gray-500/25 text-xs xs:text-sm sm:text-sm transform hover:scale-105 cursor-pointer"
         >
           <CreditCard size={14} className="xs:w-4 xs:h-4 sm:w-4 sm:h-4" />
           <span className="text-xs xs:text-sm sm:text-sm">Buy Now</span>

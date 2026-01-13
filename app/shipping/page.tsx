@@ -8,16 +8,20 @@ import { PublicSettings } from '@/types/settings';
 
 export default function ShippingPage() {
   const [settings, setSettings] = useState<PublicSettings | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
+        setLoading(true);
         const response = await settingsAPI.getPublicSettings();
         if (response.success && response.data) {
           setSettings(response.data);
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -27,30 +31,31 @@ export default function ShippingPage() {
   const contactEmail = settings?.contactEmail || 'support@example.com';
   const contactNumber = settings?.contactNumber || '+1 (555) 123-4567';
 
+  // Use dynamic shipping settings from backend with fallback values
   const shippingInfo = {
+    shippingInfo: settings?.shippingInfo || 'Learn about our shipping policies, delivery times, and tracking information',
+    orderProcessingTime: settings?.orderProcessingTime || 'All orders are processed within 1-2 business days after payment confirmation. Orders placed on weekends or holidays will be processed on the next business day.',
+    
     domestic: {
       standard: {
-        delivery: '5-7 business days',
-        cost: '$4.99',
-        freeThreshold: 'Orders above $50'
+        delivery: settings?.standardShippingDelivery || '5-7 business days',
+        cost: settings?.standardShippingCost || '$4.99',
+        freeThreshold: `Orders above ${settings?.standardFreeShippingThreshold || '$50'}`
       },
       express: {
-        delivery: '2-3 business days',
-        cost: '$9.99',
-        freeThreshold: 'Orders above $100'
+        delivery: settings?.expressShippingDelivery || '2-3 business days',
+        cost: settings?.expressShippingCost || '$9.99',
+        freeThreshold: `Orders above ${settings?.expressFreeShippingThreshold || '$100'}`
       },
       overnight: {
-        delivery: '1 business day',
-        cost: '$19.99',
+        delivery: settings?.overnightShippingDelivery || '1 business day',
+        cost: settings?.overnightShippingCost || '$19.99',
         freeThreshold: 'Not available'
       }
     },
     international: {
-      standard: {
-        delivery: '10-15 business days',
-        cost: 'Based on destination',
-        freeThreshold: 'Not available'
-      }
+      delivery: settings?.internationalShippingDelivery || '10-15 business days',
+      note: settings?.internationalShippingNote || 'International shipping costs vary by destination. You\'ll see the exact shipping cost at checkout.'
     },
     processingTime: '1-2 business days',
     tracking: 'Available for all orders',
@@ -67,17 +72,27 @@ export default function ShippingPage() {
     'Japan'
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading shipping information...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
       <div className="container mx-auto px-4 max-w-4xl">
-        {/* Breadcrumb */}
-    
-
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Shipping Information</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Learn about our shipping policies, delivery times, and tracking information
+            {shippingInfo.shippingInfo}
           </p>
         </div>
 
@@ -90,7 +105,7 @@ export default function ShippingPage() {
             </h2>
             <div className="bg-gray-50 p-6 rounded-xl">
               <p className="text-gray-700">
-                All orders are processed within <strong className="text-gray-800">{shippingInfo.processingTime}</strong> after payment confirmation. Orders placed on weekends or holidays will be processed on the next business day.
+                {shippingInfo.orderProcessingTime}
               </p>
             </div>
           </section>
@@ -166,17 +181,14 @@ export default function ShippingPage() {
                 <h3 className="text-xl font-semibold text-gray-900">International Shipping</h3>
               </div>
               <div className="space-y-3 text-gray-700">
-                <p><span className="font-medium text-gray-800">Delivery:</span> {shippingInfo.international.standard.delivery}</p>
-                <p><span className="font-medium text-gray-800">Cost:</span> {shippingInfo.international.standard.cost}</p>
+                <p><span className="font-medium text-gray-800">Delivery:</span> {shippingInfo.international.delivery}</p>
+                <p><span className="font-medium text-gray-800">Cost:</span> Based on destination</p>
                 <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded">
-                  International shipping costs vary by destination. You'll see the exact shipping cost at checkout.
+                  {shippingInfo.international.note}
                 </p>
               </div>
             </div>
           </section>
-
-
-
 
           {/* Contact for Support */}
           <section className="mb-10">

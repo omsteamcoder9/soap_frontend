@@ -490,16 +490,23 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
                     <span className="text-xl sm:text-2xl font-bold text-gray-800">
                       ₹{displayPrice.toLocaleString('en-IN')}
                     </span>
-                    {originalPrice && originalPrice > displayPrice && (
-                      <>
-                        <span className="text-lg text-gray-500 line-through">
-                          ₹{originalPrice.toLocaleString('en-IN')}
-                        </span>
-                        <span className="text-sm font-bold text-green-600">
-                          {discountPercentage}% OFF
-                        </span>
-                      </>
-                    )}
+                   {originalPrice && originalPrice > displayPrice && (
+  <>
+    <span 
+      className="text-lg text-gray-500"
+      style={{ 
+        textDecoration: 'line-through',
+        textDecorationColor: '#6b7280', // gray-500
+        textDecorationThickness: '2px'
+      }}
+    >
+      ₹{originalPrice.toLocaleString('en-IN')}
+    </span>
+    <span className="text-sm font-bold text-green-600">
+      {discountPercentage}% OFF
+    </span>
+  </>
+)}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-0.5 rounded-full text-xs ${currentStock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

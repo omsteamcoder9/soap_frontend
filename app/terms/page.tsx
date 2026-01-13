@@ -4,104 +4,64 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { settingsAPI } from '@/lib/settings-api';
-import { PublicSettings } from '@/types/settings';
+
+interface TermsOfServiceSettings {
+  termsOfServiceTitle: string;
+  termsOfServiceLastUpdated: string;
+  termsImportantNotice: string;
+  termsUserRequirements: string[];
+  termsSections: Array<{ number: number; title: string; content: string }>;
+  termsIntellectualProperty: string;
+  termsLimitationLiability: string;
+  termsChangesNotice: string;
+  termsContactInfo: string;
+}
 
 export default function TermsPage() {
-  const [settings, setSettings] = useState<PublicSettings | null>(null);
+  const [settings, setSettings] = useState<TermsOfServiceSettings | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await settingsAPI.getPublicSettings();
-        if (response.success && response.data) {
-          setSettings(response.data);
-        }
+        const termsSettings = await settingsAPI.getTermsOfServiceSettings();
+        setSettings(termsSettings);
       } catch (error) {
-        console.error('Error fetching settings:', error);
+        console.error('Error fetching terms settings:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchSettings();
   }, []);
 
-  const siteName = settings?.siteName || 'Our Store';
-  const contactEmail = settings?.contactEmail || 'support@example.com';
-  const contactNumber = settings?.contactNumber || '+1 (555) 123-4567';
-
-  const termsSections = [
-    {
-      number: 1,
-      title: 'Agreement to Terms',
-      content: `By accessing and using ${siteName} (the "Website"), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Website.`
-    },
-    {
-      number: 2,
-      title: 'User Accounts',
-      content: `When you create an account with us, you must provide accurate and complete information. You are responsible for maintaining the confidentiality of your account and password and for restricting access to your account. You agree to accept responsibility for all activities that occur under your account.`
-    },
-    {
-      number: 3,
-      title: 'Product Information',
-      content: `We make every effort to display as accurately as possible the colors, features, specifications, and details of products available on the Website. However, we do not guarantee that the colors, features, specifications, and details will be completely accurate. All products are subject to availability, and we cannot guarantee that items will be in stock. We reserve the right to discontinue any products at any time.`
-    },
-    {
-      number: 4,
-      title: 'Orders and Payment',
-      content: `By placing an order through our Website, you warrant that you are legally capable of entering into binding contracts and are at least 18 years old. We accept various payment methods as indicated on the Website. All payments are processed through secure third-party payment processors. We do not store your credit card information.`
-    },
-    {
-      number: 5,
-      title: 'Shipping and Delivery',
-      content: `Shipping times and costs will vary depending on your location and the shipping method selected. Estimated delivery times are provided at checkout and are estimates only. Risk of loss and title for items purchased pass to you upon delivery of the items to the carrier. You are responsible for filing any claims with carriers for damaged and/or lost shipments.`
-    },
-    {
-      number: 6,
-      title: 'Returns and Refunds',
-      content: `Please review our Returns Policy for detailed information about returning products. Returns must be initiated within the specified return period and meet all return requirements.`
-    },
-    {
-      number: 7,
-      title: 'Intellectual Property',
-      content: `All content on this Website, including text, graphics, logos, images, and software, is the property of ${siteName} or its content suppliers and is protected by copyright and other intellectual property laws.`
-    },
-    {
-      number: 8,
-      title: 'Limitation of Liability',
-      content: `To the maximum extent permitted by law, ${siteName} shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the Website.`
-    },
-    {
-      number: 9,
-      title: 'Changes to Terms',
-      content: `We reserve the right to modify these terms at any time. We will notify users of any material changes by posting the new Terms of Service on this page and updating the "Last updated" date.`
-    },
-    {
-      number: 10,
-      title: 'Contact Information',
-      content: `Questions about the Terms of Service should be sent to us at the contact information provided in our website footer.`
-    }
-  ];
-
-  const importantPoints = [
-    'You must be at least 18 years old to place an order',
-    'Payment processing is handled by secure third-party providers',
-    'All product images are for illustrative purposes only',
-    'Shipping times are estimates and not guarantees',
-    'We reserve the right to refuse service to anyone'
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading terms of service...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
       <div className="container mx-auto px-4 max-w-4xl">
- 
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Terms of Service</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            {settings?.termsOfServiceTitle || 'Terms of Service'}
+          </h1>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <div className="bg-gray-700 text-white px-3 py-1.5 rounded-md text-sm font-medium">
-              Last updated: {new Date().getFullYear()}
+              Last updated: {settings?.termsOfServiceLastUpdated || new Date().getFullYear()}
             </div>
-         
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Please read these terms carefully before using our website. By accessing or using our services, you agree to be bound by these terms.
@@ -117,36 +77,123 @@ export default function TermsPage() {
             </h2>
             <div className="bg-gray-50 p-6 rounded-xl">
               <p className="text-gray-700 mb-4">
-                These Terms of Service govern your use of our website and services. By using our website, you acknowledge that you have read, understood, and agree to be bound by these terms.
+                {settings?.termsImportantNotice || 'These Terms of Service govern your use of our website and services. By using our website, you acknowledge that you have read, understood, and agree to be bound by these terms.'}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {importantPoints.map((point, index) => (
-                  <div 
-                    key={index} 
-                    className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-all duration-200 font-medium shadow text-sm"
-                  >
-                    {point}
-                  </div>
-                ))}
-              </div>
+              {settings?.termsUserRequirements && settings.termsUserRequirements.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {settings.termsUserRequirements.map((point, index) => (
+                    <div 
+                      key={index} 
+                      className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-all duration-200 font-medium shadow text-sm"
+                    >
+                      {point}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    'You must be at least 18 years old to place an order',
+                    'Payment processing is handled by secure third-party providers',
+                    'All product images are for illustrative purposes only',
+                    'Shipping times are estimates and not guarantees',
+                    'We reserve the right to refuse service to anyone'
+                  ].map((point, index) => (
+                    <div 
+                      key={index} 
+                      className="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-800 transition-all duration-200 font-medium shadow text-sm"
+                    >
+                      {point}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Terms Sections */}
           <div className="space-y-8">
-            {termsSections.map((section) => (
-              <section key={section.number} className="border-b border-gray-200 pb-8 last:border-0">
-                <div className="flex items-start mb-4">
-                  <div className="w-10 h-10 bg-gray-700 text-white rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="font-bold">{section.number}</span>
+            {settings?.termsSections && settings.termsSections.length > 0 ? (
+              settings.termsSections.map((section) => (
+                <section key={section.number} className="border-b border-gray-200 pb-8 last:border-0">
+                  <div className="flex items-start mb-4">
+                    <div className="w-10 h-10 bg-gray-700 text-white rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                      <span className="font-bold">{section.number}</span>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-semibold text-gray-900 mb-3">{section.title}</h2>
+                      <p className="text-gray-700 leading-relaxed">{section.content}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-3">{section.title}</h2>
-                    <p className="text-gray-700 leading-relaxed">{section.content}</p>
+                </section>
+              ))
+            ) : (
+              // Fallback to default sections if none exist
+              [
+                {
+                  number: 1,
+                  title: 'Agreement to Terms',
+                  content: 'By accessing and using our website, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Website.'
+                },
+                {
+                  number: 2,
+                  title: 'User Accounts',
+                  content: 'When you create an account with us, you must provide accurate and complete information. You are responsible for maintaining the confidentiality of your account and password and for restricting access to your account. You agree to accept responsibility for all activities that occur under your account.'
+                },
+                {
+                  number: 3,
+                  title: 'Product Information',
+                  content: 'We make every effort to display as accurately as possible the colors, features, specifications, and details of products available on the Website. However, we do not guarantee that the colors, features, specifications, and details will be completely accurate. All products are subject to availability, and we cannot guarantee that items will be in stock. We reserve the right to discontinue any products at any time.'
+                },
+                {
+                  number: 4,
+                  title: 'Orders and Payment',
+                  content: 'By placing an order through our Website, you warrant that you are legally capable of entering into binding contracts and are at least 18 years old. We accept various payment methods as indicated on the Website. All payments are processed through secure third-party payment processors. We do not store your credit card information.'
+                },
+                {
+                  number: 5,
+                  title: 'Shipping and Delivery',
+                  content: 'Shipping times and costs will vary depending on your location and the shipping method selected. Estimated delivery times are provided at checkout and are estimates only. Risk of loss and title for items purchased pass to you upon delivery of the items to the carrier. You are responsible for filing any claims with carriers for damaged and/or lost shipments.'
+                },
+                {
+                  number: 6,
+                  title: 'Returns and Refunds',
+                  content: 'Please review our Returns Policy for detailed information about returning products. Returns must be initiated within the specified return period and meet all return requirements.'
+                },
+                {
+                  number: 7,
+                  title: 'Intellectual Property',
+                  content: settings?.termsIntellectualProperty || 'All content on this Website, including text, graphics, logos, images, and software, is the property of our company or its content suppliers and is protected by copyright and other intellectual property laws.'
+                },
+                {
+                  number: 8,
+                  title: 'Limitation of Liability',
+                  content: settings?.termsLimitationLiability || 'To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the Website.'
+                },
+                {
+                  number: 9,
+                  title: 'Changes to Terms',
+                  content: settings?.termsChangesNotice || 'We reserve the right to modify these terms at any time. We will notify users of any material changes by posting the new Terms of Service on this page and updating the "Last updated" date.'
+                },
+                {
+                  number: 10,
+                  title: 'Contact Information',
+                  content: settings?.termsContactInfo || 'Questions about the Terms of Service should be sent to us at the contact information provided in our website footer.'
+                }
+              ].map((section) => (
+                <section key={section.number} className="border-b border-gray-200 pb-8 last:border-0">
+                  <div className="flex items-start mb-4">
+                    <div className="w-10 h-10 bg-gray-700 text-white rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                      <span className="font-bold">{section.number}</span>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-semibold text-gray-900 mb-3">{section.title}</h2>
+                      <p className="text-gray-700 leading-relaxed">{section.content}</p>
+                    </div>
                   </div>
-                </div>
-              </section>
-            ))}
+                </section>
+              ))
+            )}
           </div>
 
           {/* Contact Information */}
@@ -157,7 +204,7 @@ export default function TermsPage() {
             </h2>
             <div className="bg-gray-50 p-6 rounded-xl">
               <p className="text-gray-700 mb-6">
-                If you have any questions about these Terms of Service, please contact us using the information below.
+                {settings?.termsContactInfo || 'Questions about the Terms of Service should be sent to us at the contact information provided in our website footer.'}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
@@ -165,13 +212,7 @@ export default function TermsPage() {
                     <svg className="w-5 h-5 text-gray-700 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <span>{contactEmail}</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <svg className="w-5 h-5 text-gray-700 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
-                    </svg>
-                    <span>{contactNumber}</span>
+                    <span>Contact us using the email in our website footer</span>
                   </div>
                 </div>
                 

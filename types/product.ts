@@ -15,14 +15,14 @@ export interface ProductVariant {  // ✅ ADDED: Product Variants
   variantName: string;
   variantSlug?: string;
   price: number;
-  originalPrice?: number;
+  originalPrice?: number; // ✅ ADDED for offer support
   description?: string;
   stock: number;
   images: ProductImage[];
   sku?: string;
   isDefault: boolean;
   status: 'active' | 'inactive' | 'out-of-stock';
-  discountPercentage: number;
+  discountPercentage?: number; // ✅ ADDED for offer support
   features?: string[];
   _id?: string;
 }
@@ -39,7 +39,12 @@ export interface Product {
   name: string;
   slug: string;
   basePrice: number; // ✅ CHANGED: from price to basePrice (to match backend)
+  
+  // ✅ OFFER FIELDS - ADDED HERE
   originalPrice?: number;
+  discountPercentage?: number;
+  hasOffer?: boolean;
+  
   description: string;
   category: string | {
     _id: string;
@@ -152,6 +157,12 @@ export interface PriceRangesResponse {
 export interface CreateProductData {
   name: string;
   basePrice: number; // ✅ CHANGED: from price to basePrice
+  
+  // ✅ OFFER FIELDS - ADDED HERE
+  originalPrice?: number;
+  discountPercentage?: number;
+  hasOffer?: boolean;
+  
   description: string;
   category: string;
   seller: string;
@@ -216,4 +227,13 @@ export interface CreateProductResponse {
   success: boolean;
   message: string;
   data: Product;
+}
+
+// ✅ ADDED: Offer calculation helper interface
+export interface ProductOfferInfo {
+  hasOffer: boolean;
+  originalPrice: number;
+  discountedPrice: number;
+  discountPercentage: number;
+  discountAmount: number;
 }
