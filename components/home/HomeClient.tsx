@@ -268,7 +268,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
 
       {/* Explore Soaps Section */}
       <section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-1">
           <div className="text-center mb-8">
             <h2 className="text-4xl font-bold text-gray-900 mb-3">Explore soaps</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">

@@ -16,7 +16,7 @@ export default function CartPage() {
   // Use cart data directly from backend response
   const itemCount = cart.totalItems || 0;
   const subtotal = cart.totalPrice || 0;
-  const tax = subtotal * 0.18;
+  const tax = subtotal * 0.05;
   const total = subtotal + tax;
 
   if (!cart.items || cart.items.length === 0) {
@@ -185,7 +185,7 @@ export default function CartPage() {
                   <span className="text-green-600">FREE</span>
                 </div>
                 <div className="flex justify-between text-sm sm:text-base">
-                  <span>Tax (18%)</span>
+                  <span>Tax (5%)</span>
                   <span>₹{tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t pt-2 sm:pt-3 flex justify-between text-base sm:text-lg font-semibold">

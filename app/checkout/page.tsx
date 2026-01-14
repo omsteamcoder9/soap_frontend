@@ -558,7 +558,7 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
     );
   }
 
-  const tax = (cart.totalPrice || 0) * 0.18;
+  const tax = (cart.totalPrice || 0) * 0.05;
   const shippingFee = (cart.totalPrice || 0) > 500 ? 0 : 50;
   const total = (cart.totalPrice || 0) + tax + shippingFee;
 
@@ -815,7 +815,7 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
                   <span>{shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}</span>
                 </div>
                 <div className="flex justify-between text-sm sm:text-base">
-                  <span>Tax (18%)</span>
+                  <span>Tax (5%)</span>
                   <span>₹{tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-base sm:text-lg font-semibold border-t pt-2">
