@@ -330,12 +330,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                   priority
                 />
                 
-                {/* CENTERED TEXT */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <h2 className="text-white font-serif text-[40px] tracking-wide leading-tight text-center drop-shadow-lg">
-                    OUR <br /> SKIN-VESTMENT
-                  </h2>
-                </div>
+           
               </div>
             </div>
 
