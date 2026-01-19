@@ -315,7 +315,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
 
       {/* Skin-vestment Section */}
       <section className="bg-[#f6f5f2] py-28" aria-label="Our Skin-Vestment Philosophy">
-        <div className="max-w-7xl mx-auto px-8">
+        <div className="max-w-7xl mx-auto px-5">
           <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-24">
             {/* LEFT — PAPER WITH MASK */}
             <div className="flex justify-center md:justify-start">

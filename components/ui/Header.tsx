@@ -9,6 +9,7 @@ import { fetchActiveCategories } from '@/lib/categoryService';
 import { quickSearchProducts } from '@/lib/productService';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { settingsAPI } from '@/lib/settings-api'; // Add this import
 
 interface Category {
   _id: string;
@@ -40,6 +41,7 @@ export default function Header() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [siteName, setSiteName] = useState('GLAINIC SOAP'); // Default value
   
   // Scroll behavior for footer
   const [isFooterVisible, setIsFooterVisible] = useState(false);
@@ -61,6 +63,26 @@ export default function Header() {
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Fetch site settings including siteName
+  useEffect(() => {
+    const loadSiteSettings = async () => {
+      try {
+        const response = await settingsAPI.getPublicSettings();
+        if (response.success && response.data) {
+          const settings = response.data;
+          if (settings.siteName && settings.siteName.trim() !== '') {
+            setSiteName(settings.siteName);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading site settings:', error);
+        // Keep default value if API fails
+      }
+    };
+
+    loadSiteSettings();
   }, []);
 
   useEffect(() => {
@@ -267,7 +289,7 @@ export default function Header() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">GLAINIC SOAP</span>
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">{siteName}</span>
                 </div>
               </Link>
             </div>
@@ -665,7 +687,7 @@ export default function Header() {
                         />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-lg font-bold text-white">GLAINIC SOAP</span>
+                        <span className="text-lg font-bold text-white">{siteName}</span>
                       </div>
                     </Link>
                     <button
