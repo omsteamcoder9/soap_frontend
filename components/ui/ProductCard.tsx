@@ -128,13 +128,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className={`absolute inset-0 bg-black/20 flex items-center justify-center transition-all duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
           } hidden sm:flex`}>
-            <button 
-              onClick={handleQuickView}
-              className="bg-white text-gray-900 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 hover:bg-gray-50 border border-gray-200 hover:border-gray-300 text-xs sm:text-sm"
-            >
-              <Eye size={14} className="sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Quick View</span>
-            </button>
+           
           </div>
 
           {imageError && (
@@ -204,7 +198,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </span>
         </button>
 
-        {/* Buy Now Button */}
+        {/* Buy Now Button
         <button 
           onClick={handleBuyNow}
           disabled={isOutOfStock}
@@ -212,7 +206,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         >
           <CreditCard size={14} className="xs:w-4 xs:h-4 sm:w-4 sm:h-4" />
           <span className="text-xs xs:text-sm sm:text-sm">Buy Now</span>
-        </button>
+        </button> */}
       </div>
     </div>
   );

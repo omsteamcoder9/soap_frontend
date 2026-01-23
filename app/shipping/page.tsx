@@ -39,18 +39,18 @@ export default function ShippingPage() {
     domestic: {
       standard: {
         delivery: settings?.standardShippingDelivery || '5-7 business days',
-        cost: settings?.standardShippingCost || '$4.99',
-        freeThreshold: `Orders above ${settings?.standardFreeShippingThreshold || '$50'}`
+        cost: 'FREE', // Updated to FREE
+        freeThreshold: 'All domestic orders are delivered for free of charge.' // Added the new text
       },
       express: {
         delivery: settings?.expressShippingDelivery || '2-3 business days',
-        cost: settings?.expressShippingCost || '$9.99',
-        freeThreshold: `Orders above ${settings?.expressFreeShippingThreshold || '$100'}`
+        cost: 'FREE', // Updated to FREE
+        freeThreshold: 'All domestic orders are delivered for free of charge.' // Added the new text
       },
       overnight: {
         delivery: settings?.overnightShippingDelivery || '1 business day',
-        cost: settings?.overnightShippingCost || '$19.99',
-        freeThreshold: 'Not available'
+        cost: 'FREE', // Updated to FREE
+        freeThreshold: 'All domestic orders are delivered for free of charge.' // Added the new text
       }
     },
     international: {
@@ -116,6 +116,18 @@ export default function ShippingPage() {
               <div className="w-2 h-8 bg-gray-700 mr-3 rounded-full"></div>
               Shipping Methods & Rates
             </h2>
+            
+            {/* FREE DOMESTIC SHIPPING NOTICE */}
+            <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center">
+                <svg className="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <p className="text-green-800 font-medium">
+                  All domestic orders are delivered for free of charge.
+                </p>
+              </div>
+            </div>
             
             <div className="grid md:grid-cols-2 gap-6 mb-8">
               {/* Domestic Standard */}

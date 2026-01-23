@@ -99,6 +99,61 @@ export const settingsAPI = {
     }
   },
   
+  // Get contact information settings only (public)
+  getContactInfo: async (): Promise<{
+    contactNumber: string;
+    whatsappNumber: string;
+    callNumber: string;
+    contactEmail: string;
+    companyAddress: string;
+    facebookUrl: string;
+    twitterUrl: string;
+    instagramUrl: string;
+    youtubeUrl: string; // ADDED
+    linkedinUrl: string;
+  }> => {
+    try {
+      const response = await fetch(`${API_URL}/settings/public`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      
+      // Extract contact info from the response
+      if (data.success && data.data) {
+        const settings = data.data;
+        return {
+          contactNumber: settings.contactNumber || '+91 1234567890',
+          whatsappNumber: settings.whatsappNumber || '+91 1234567890',
+          callNumber: settings.callNumber || '+91 1234567890',
+          contactEmail: settings.contactEmail || 'contact@example.com',
+          companyAddress: settings.companyAddress || '123 Street, City, Country',
+          facebookUrl: settings.facebookUrl || '',
+          twitterUrl: settings.twitterUrl || '',
+          instagramUrl: settings.instagramUrl || '',
+          youtubeUrl: settings.youtubeUrl || '', // ADDED
+          linkedinUrl: settings.linkedinUrl || ''
+        };
+      }
+      throw new Error('Failed to fetch contact information');
+    } catch (error) {
+      console.error('Error fetching contact information:', error);
+      // Return default contact info if API fails
+      return {
+        contactNumber: '+91 1234567890',
+        whatsappNumber: '+91 1234567890',
+        callNumber: '+91 1234567890',
+        contactEmail: 'contact@example.com',
+        companyAddress: '123 Street, City, Country',
+        facebookUrl: '',
+        twitterUrl: '',
+        instagramUrl: '',
+        youtubeUrl: '', // ADDED
+        linkedinUrl: ''
+      };
+    }
+  },
+  
   // Get shipping settings only (public)
   getShippingSettings: async (): Promise<{
     shippingInfo: string;
@@ -341,7 +396,7 @@ export const settingsAPI = {
     }
   },
 
-  // Get terms of service settings only (public) - NEW METHOD
+  // Get terms of service settings only (public)
   getTermsOfServiceSettings: async (): Promise<{
     termsOfServiceTitle: string;
     termsOfServiceLastUpdated: string;

@@ -6,6 +6,7 @@ import { AuthProvider } from '@/context/AuthContext'
 import { CartProvider } from '@/context/CartContext'
 import Header from '@/components/ui/Header'
 import Footer from '@/components/ui/Footer'
+import FloatingContactButtons from '@/components/FloatingContactButtons'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   title: 'soap',
   description: 'Your one-stop shop for eco-friendly products',
   icons: {
-    icon: "images/logot.jpg",
+    icon: "images/fea.png",
   },
 }
 
@@ -33,6 +34,8 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
+              {/* Add Floating Contact Buttons here */}
+              <FloatingContactButtons />
             </div>
           </CartProvider>
         </AuthProvider>

@@ -7,6 +7,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Category } from '@/types/category';
 import ProductGrid from '@/components/products/ProductGrid';
 import Image from "next/image";
+import { settingsAPI } from '@/lib/settings-api'; // ADDED IMPORT
 
 interface HomeClientProps {
   categories: Category[];
@@ -19,7 +20,8 @@ const heroSlides = [
     id: 1,
     titleLine1: "Hold",
     titleLine2: "the Nature",
-    subtitle: "Glainic™ Essentials",
+                    
+    subtitle: "Glainic Newly Launched Collection",
     tagline: "Pure. Gentle. Naturally Beautiful.",
     description: "The art of cleansing redefined. Experience a ritual of nature, meticulously crafted for your skin's soul.",
     bgImage: "/images/aaa.png",
@@ -35,7 +37,7 @@ const heroSlides = [
     subtitle: "Organic Collection",
     tagline: "Nature's Touch in Every Bar",
     description: "Handcrafted with organic botanicals for your daily cleansing ritual.",
-    bgImage: "/images/f2.jpg", // Using same image for all slides
+    bgImage: "/images/f2.jpg",
     overlay: "from-blue-900/80 via-blue-800/40 to-transparent",
   
     ctaLink: "/products?category=organic",
@@ -48,7 +50,7 @@ const heroSlides = [
     subtitle: "Premium Range",
     tagline: "Elevate Your Daily Ritual",
     description: "Indulge in premium ingredients that nourish and rejuvenate your skin.",
-    bgImage: "/images/g2.jpg", // Using same image for all slides
+    bgImage: "/images/g2.jpg",
     overlay: "from-amber-900/80 via-amber-800/40 to-transparent",
   
     ctaLink: "/products?category=premium",
@@ -62,12 +64,30 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [contactNumber, setContactNumber] = useState('7200074221'); // ADDED STATE
 
-  // Auto slide change - works on both mobile and desktop
+  // Fetch contact info on component mount
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        const contactInfo = await settingsAPI.getContactInfo();
+        // Use whatsappNumber or contactNumber from settings
+        setContactNumber(contactInfo.whatsappNumber || contactInfo.contactNumber || '7200074221');
+      } catch (error) {
+        console.error('Error fetching contact info:', error);
+        // Keep default number if API fails
+        setContactNumber('7200074221');
+      }
+    };
+
+    fetchContactInfo();
+  }, []);
+
+  // Auto slide change
   useEffect(() => {
     const interval = setInterval(() => {
       nextSlide();
-    }, 4000); // Change slide every 5 seconds
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [currentSlide]);
@@ -105,8 +125,8 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
 
   const faqItems = [
     {
-      question: "How can I track my order?",
-      answer: "You can track your order from 'My Orders' section. There is a button 'Track Order' in front of each shipped order."
+      question: "How can I See my order?",
+      answer: "You can see your order in the 'My Profile' section."
     },
     {
       question: "What is the standard delivery timings?",
@@ -114,7 +134,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
     },
     {
       question: "Is free delivery available?",
-      answer: "Yes, For free delivery minimum order amount should be Rs. 599."
+      answer: "All domestic orders are delivered for free of charge."
     },
     {
       question: "Is COD available?",
@@ -139,132 +159,120 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
       </div>
 
       {/* Hero Slider Section - 3 Slides */}
-<section
-      className="relative min-h-screen flex items-center overflow-hidden bg-[#0f110c]"
-      aria-label="Glafnic Soap Hero Slider"
-    >
-      {/* Background Slides Container */}
-      <div className="absolute inset-0 z-0">
-        {heroSlides.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              currentSlide === index ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-<Image
-  src={slide.bgImage}
-  alt="Hold the Nature – Glafnic"
-  fill
-  priority
-  sizes="100vw"
-  className="object-cover object-[70%_25%]"
-/>
-
-
-
-
-            <div className={`absolute inset-0 bg-gradient-to-r ${slide.overlay}`} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          </div>
-        ))}
-      </div>
-
-      {/* Slide Navigation Buttons */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 md:left-8 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group"
-        aria-label="Previous slide"
+      <section
+        className="relative min-h-screen flex items-center overflow-hidden bg-[#0f110c]"
+        aria-label="Glafnic Soap Hero Slider"
       >
-        <svg className="w-5 h-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+        {/* Background Slides Container */}
+        <div className="absolute inset-0 z-0">
+          {heroSlides.map((slide, index) => (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                currentSlide === index ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <Image
+                src={slide.bgImage}
+                alt="Hold the Nature – Glafnic"
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-[70%_25%]"
+              />
+              <div className={`absolute inset-0 bg-gradient-to-r ${slide.overlay}`} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            </div>
+          ))}
+        </div>
 
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 md:right-8 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group"
-        aria-label="Next slide"
-      >
-        <svg className="w-5 h-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+        {/* Slide Navigation Buttons */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 md:left-8 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group"
+          aria-label="Previous slide"
+        >
+          <svg className="w-5 h-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
-        {heroSlides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              currentSlide === index 
-                ? 'bg-white w-8' 
-                : 'bg-white/50 hover:bg-white/80'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 md:right-8 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group"
+          aria-label="Next slide"
+        >
+          <svg className="w-5 h-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
 
-      {/* Main Content Container */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
-        {heroSlides.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`transition-all duration-1000 ease-out transform ${
-              currentSlide === index
-                ? 'opacity-100 translate-x-0 relative'
-                : 'opacity-0 -translate-x-20 absolute pointer-events-none'
-            }`}
-          >
-            <div className="max-w-2xl text-left">
-              {/* Brand Header */}
-              <div className="space-y-1 mb-8">
-                <div className="flex items-center gap-3">
-                  <span className={`h-[1px] w-10 bg-${slide.accentColor}-400/60`}></span>
-                  <p className="text-white/80 tracking-[0.4em] uppercase text-xs font-medium">
-                    {slide.subtitle}
+        {/* Slide Indicators */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+          {heroSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                currentSlide === index 
+                  ? 'bg-white w-8' 
+                  : 'bg-white/50 hover:bg-white/80'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Main Content Container */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
+          {heroSlides.map((slide, index) => (
+            <div
+              key={slide.id}
+              className={`transition-all duration-1000 ease-out transform ${
+                currentSlide === index
+                  ? 'opacity-100 translate-x-0 relative'
+                  : 'opacity-0 -translate-x-20 absolute pointer-events-none'
+              }`}
+            >
+              <div className="max-w-2xl text-left">
+                {/* Brand Header */}
+                <div className="space-y-1 mb-8">
+                  <div className="flex items-center gap-3">
+                    <span className={`h-[1px] w-10 bg-${slide.accentColor}-400/60`}></span>
+                    <p className="text-white/80 tracking-[0.4em] uppercase text-xs font-medium">
+                      {slide.subtitle}
+                    </p>
+                  </div>
+                  <p className="italic text-white/60 text-base md:text-lg font-light pl-12">
+                    {slide.tagline}
                   </p>
                 </div>
-                <p className="italic text-white/60 text-base md:text-lg font-light pl-12">
-                  {slide.tagline}
-                </p>
-              </div>
 
-              {/* Hero Headline */}
-              <h1 className="font-serif text-white leading-[1.1] mb-6">
-                <span className="block text-6xl md:text-7xl lg:text-8xl font-light tracking-tight">
-                  {slide.titleLine1}
-                </span>
-                <span className="block text-5xl md:text-6xl lg:text-7xl italic font-extralight text-white/90 ml-4 md:ml-12">
-                  {slide.titleLine2}
-                </span>
-              </h1>
+                {/* Hero Headline */}
+                <h1 className="font-serif text-white leading-[1.1] mb-6">
+                  <span className="block text-6xl md:text-7xl lg:text-8xl font-light tracking-tight">
+                    {slide.titleLine1}
+                  </span>
+                  <span className="block text-5xl md:text-6xl lg:text-7xl italic font-extralight text-white/90 ml-4 md:ml-12">
+                    {slide.titleLine2}
+                  </span>
+                </h1>
 
-              {/* Description Text */}
-              <div className="space-y-4 max-w-lg mb-10">
-                <p className="text-white/90 text-lg md:text-xl font-light leading-relaxed">
-                  {slide.description}
-                </p>
-                <div className="flex items-center gap-2 text-white/50 text-sm tracking-wide">
-                  <span className={`w-2 h-2 rounded-full bg-${slide.accentColor}-500 animate-pulse`}></span>
-                  Newly Launched Collection
-                </div>
+                {/* Description Text */}
+                
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Minimalist Scroll Indicator */}
-      <div className="absolute bottom-12 left-6 md:left-12 hidden md:flex items-center gap-4">
-        <div className="w-[1px] h-16 bg-gradient-to-b from-white/60 to-transparent" />
-        <span className="text-[9px] text-white/40 tracking-[0.5em] uppercase [writing-mode:vertical-lr]">
-          Scroll to discover
-        </span>
-      </div>
-    </section>
+        {/* Minimalist Scroll Indicator */}
+        <div className="absolute bottom-12 left-6 md:left-12 hidden md:flex items-center gap-4">
+          <div className="w-[1px] h-16 bg-gradient-to-b from-white/60 to-transparent" />
+          <span className="text-[9px] text-white/40 tracking-[0.5em] uppercase [writing-mode:vertical-lr]">
+            Scroll to discover
+          </span>
+        </div>
+      </section>
 
       {/* Explore Soaps Section */}
       <section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
@@ -286,20 +294,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                   animationFillMode: 'both'
                 }}
               >
-                {/* Category Header */}
-                <div className="relative flex items-center justify-center mb-4">
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 text-center">
-                    {category.name}
-                  </h3>
-                  <button 
-                    onClick={() => router.push(`/products?category=${category.slug}`)}
-                    className="absolute right-0 inline-flex items-center gap-0.5 sm:gap-1 bg-gray-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:bg-gray-800 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
-                    aria-label={`View more ${category.name} soaps`}
-                  >
-                    View More
-                    <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                  </button>
-                </div>
+          
 
                 {/* CHANGED: limit from 18 to 12 */}
                 <ProductGrid 
@@ -313,46 +308,73 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
         </div>
       </section>
 
-      {/* Skin-vestment Section */}
-      <section className="bg-[#f6f5f2] py-28" aria-label="Our Skin-Vestment Philosophy">
-        <div className="max-w-7xl mx-auto px-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-24">
-            {/* LEFT — PAPER WITH MASK */}
-            <div className="flex justify-center md:justify-start">
-              <div className="relative w-[380px] h-[460px]">
-                <Image
-                  src="/images/s1.png"
-                  alt="Our Skin-Vestment - Premium Organic Skincare"
-                  className="object-cover rounded-lg shadow-2xl"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: 'cover' }}
-                  priority
-                />
-                
-           
-              </div>
-            </div>
+ {/* Skin-vestment Section - Updated with dynamic contact number and better typography */}
+<section className="bg-[#f6f5f2] py-27" aria-label="Our Skin-Vestment Philosophy">
+  <div className="max-w-7xl mx-auto px-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-24">
+      {/* LEFT — PAPER WITH MASK */}
+      <div className="flex justify-center md:justify-start">
+        <div className="relative w-[380px] h-[460px]">
+          <Image
+            src="/images/s1.png"
+            alt="Our Skin-Vestment - Premium Organic Skincare"
+            className="object-cover rounded-lg shadow-2xl"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            style={{ objectFit: 'cover' }}
+            priority
+          />
+        </div>
+      </div>
 
-            {/* RIGHT — COPY */}
-            <div className="text-center md:text-left">
-              <h2 className="font-serif text-[52px] leading-tight text-[#2c2c2c] mb-8">
-                Say Hello to Glow
-              </h2>
+      {/* RIGHT — COPY - Updated with better font sizing */}
+      <div className="text-center md:text-left">
+        <h2 className="font-serif text-[52px] leading-tight text-[#2c2c2c] mb-8">
+          Say Hello to Glow
+        </h2>
 
-              <p className="text-[#444] text-[18px] leading-[1.9] max-w-xl mx-auto md:mx-0 mb-16">
-                Your skin deserves more than a quick fix—it&apos;s a skinvestment
-                in lasting beauty. Nourish, protect, and glow with confidence
-                every day.
-              </p>
+        <p className="text-[#444] text-[22px] leading-[1.8] max-w-xl mx-auto md:mx-0 mb-6">
+          Your skin deserves more than a quick fix—it&apos;s a skinvestment
+          in lasting beauty. Nourish, protect, and glow with confidence
+          every day.
+        </p>
 
-              <h3 className="font-serif text-[52px] leading-tight text-[#2c2c2c]">
-                For a better you, <br /> today &amp; always
-              </h3>
-            </div>
+        {/* Single line heading - FIXED FOR MOBILE */}
+<h3 className="font-serif text-[36px] xl:text-[56px] xl:text-[80px] leading-tight text-[#2c2c2c] mb-4 whitespace-nowrap overflow-x-auto">
+  For a better you, today & always
+</h3>
+
+        {/* Customization content */}
+        <div className="space-y-8 max-w-xl">
+          <div className="space-y-4">
+            <h4 className="text-[28px] font-bold text-gray-800">
+              We Welcome Customisation!
+            </h4>
+            <p className="text-[#444] text-[20px] leading-relaxed">
+              We can make varieties as per your wish! (Ex: Shea Butter soap, Turmeric, Avocado, 
+              as well as Combo products, etc.)
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <h4 className="text-[25px] font-bold text-gray-800">
+              To place a custom order:
+            </h4>
+            <p className="text-[#444] text-[20px] leading-relaxed">
+              Call / WhatsApp us at <span className="font-semibold text-gray-900">{contactNumber}</span>
+            </p>
+          </div>
+          
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r">
+            <p className="text-amber-800 font-medium text-[18px]">
+              Note: Minimum order count should be 10 units.
+            </p>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Why Choose Us Section */}
       <section className="py-12 bg-[white] border-t border-gray-200" aria-label="Why Choose Us">
@@ -370,7 +392,8 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                 icon: Truck, 
                 color: 'gray',
                 title: 'Free Shipping', 
-                desc: 'Free delivery on all orders over ₹500. Fast and reliable shipping to your doorstep.',
+                desc: 'All domestic orders are delivered for free of charge.',
+                
                 highlight: 'No hidden fees'
               },
               { 
@@ -384,7 +407,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                 icon: Clock, 
                 color: 'gray',
                 title: 'Easy Returns', 
-                desc: 'Not happy? Return within 30 days for a full refund. No questions asked.',
+                desc: ' We do not allow returns or refunds for any purchases made through our website. All sales are final and non-refundable.If the order is damaged or wrong product sent then we will process you with a refund',
                 highlight: '30-day policy'
               },
             ].map((feature, index) => (

@@ -126,7 +126,7 @@ const AboutPage: React.FC = () => {
                    Pure. Organic. <br/> <span className="italic font-normal text-stone-500">Glainic.</span>
                 </h1>
                 <p className="max-w-2xl mx-auto text-lg md:text-xl text-stone-600 leading-relaxed font-light">
-                    {storeName} is dedicated to providing 100% natural, organic soaps made with traditional methods and premium ingredients.
+                    Dedicated to provide 100%natural, organic soap with premium ingredients and by traditional methods.
                 </p>
             </div>
         </section>

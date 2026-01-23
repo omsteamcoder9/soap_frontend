@@ -9,7 +9,7 @@ import { fetchActiveCategories } from '@/lib/categoryService';
 import { quickSearchProducts } from '@/lib/productService';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { settingsAPI } from '@/lib/settings-api'; // Add this import
+import { settingsAPI } from '@/lib/settings-api';
 
 interface Category {
   _id: string;
@@ -29,7 +29,7 @@ interface SearchProduct {
 }
 
 export default function Header() {
-  const { user, logo2ut } = useAuth();
+  const { user } = useAuth();
   const { cart } = useCart();
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -41,7 +41,7 @@ export default function Header() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [siteName, setSiteName] = useState('GLAINIC SOAP'); // Default value
+  const [siteName, setSiteName] = useState('GLAINIC SOAP');
   
   // Scroll behavior for footer
   const [isFooterVisible, setIsFooterVisible] = useState(false);
@@ -78,7 +78,6 @@ export default function Header() {
         }
       } catch (error) {
         console.error('Error loading site settings:', error);
-        // Keep default value if API fails
       }
     };
 
@@ -158,8 +157,8 @@ export default function Header() {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  const handlelogo2ut = () => {
-    logo2ut();
+  const handleLogout = () => {
+   
     setShowDropdown(false);
     setIsMobileMenuOpen(false);
     router.push('/');
@@ -198,14 +197,19 @@ export default function Header() {
     }
   };
 
-  // Get first 3 categories to show in header
-  const getFirstThreeCategories = () => {
-    return categories.slice(0, 3);
+  // Get first 2 categories to show in header
+  const getFirstTwoCategories = () => {
+    return categories.slice(0, 2);
   };
 
-  const firstThreeCategories = getFirstThreeCategories();
-  
+  // Get remaining categories for shop dropdown (after first 2)
+  const getRemainingCategories = () => {
+    return categories.slice(2);
+  };
 
+  const firstTwoCategories = getFirstTwoCategories();
+  const remainingCategories = getRemainingCategories();
+  
   // Close dropdowns when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -260,12 +264,11 @@ export default function Header() {
   return (
     <>
 
-
       {/* Main Header - Using bg-gray-700 with white text */}
-      <header className="bg-gray-700 shadow-lg border-b border-gray-600 font-sans">
-        <div className="container mx-auto px-3 sm:px-4 lg:px-6">
+      <div className="xl:sticky xl:top-0 z-40">
+<header className="bg-gray-700 shadow-lg border-b border-gray-600 font-sans">   <div className="container mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* logo2 and Mobile Menu Button */}
+            {/* Logo and Mobile Menu Button */}
             <div className="flex items-center space-x-2 sm:space-x-3">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -277,12 +280,12 @@ export default function Header() {
                 </svg>
               </button>
 
-              {/* logo2 */}
+              {/* Logo */}
               <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group cursor-pointer">
                 <div className="">
                   <Image
-                    src="/images/f1.png"
-                    alt="soap logo2"
+                    src="/images/fea.png"
+                    alt="soap logo"
                     width={48}
                     height={48}
                     priority
@@ -303,8 +306,8 @@ export default function Header() {
                 Home
               </Link>
               
-              {/* First 3 Categories */}
-              {!loading && firstThreeCategories.map((category) => (
+              {/* First 2 Categories */}
+              {!loading && firstTwoCategories.map((category) => (
                 <Link 
                   key={category._id}
                   href={`/products?category=${category.slug}`}
@@ -313,6 +316,62 @@ export default function Header() {
                   {category.name}
                 </Link>
               ))}
+              
+              {/* Shop Dropdown - Shows remaining categories */}
+              {remainingCategories.length > 0 && (
+                <div ref={shopDropdownRef} className="relative">
+                  <button
+                    onClick={() => setShowShopDropdown(!showShopDropdown)}
+                    className="flex items-center space-x-1 text-white hover:text-gray-200 transition-all duration-300 font-medium px-3 py-2 rounded-lg hover:bg-gray-600 border-b-2 border-transparent hover:border-gray-400 text-sm 2xl:text-base cursor-pointer"
+                  >
+                    <span>Shop</span>
+                    <svg
+                      className={`w-3 h-3 md:w-4 md:h-4 transition-transform duration-300 ${showShopDropdown ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Shop Dropdown Menu */}
+                  {showShopDropdown && (
+                    <div className="absolute top-full left-0 mt-1 w-48 bg-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-600">
+                      <div className="px-3 py-2 border-b border-gray-700">
+                        <p className="text-white font-bold text-sm">Shop Categories</p>
+                      </div>
+                      
+                      {/* Remaining Categories (3rd, 4th, etc.) */}
+                      {remainingCategories.map((category) => (
+                        <Link
+                          key={category._id}
+                          href={`/products?category=${category.slug}`}
+                          className="flex items-center space-x-2 px-3 py-2 text-sm text-white hover:bg-gray-700 hover:text-gray-200 transition-all duration-300 cursor-pointer"
+                          onClick={() => setShowShopDropdown(false)}
+                        >
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                          </svg>
+                          <span>{category.name}</span>
+                        </Link>
+                      ))}
+                      
+                      {/* View All Products Link */}
+                      <Link
+                        href="/products"
+                        className="flex items-center space-x-2 px-3 py-2 text-sm text-white hover:bg-gray-700 hover:text-gray-200 transition-all duration-300 cursor-pointer border-t border-gray-700 mt-1"
+                        onClick={() => setShowShopDropdown(false)}
+                      >
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                        <span className="font-medium">View All Products</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
               
               {/* Offers Link in Desktop Navigation */}
               <Link 
@@ -635,7 +694,7 @@ export default function Header() {
                           <span>My Profile</span>
                         </Link>
                         <button
-                          onClick={handlelogo2ut}
+                          onClick={handleLogout}
                           className="flex items-center space-x-2 w-full text-left px-3 py-2 text-sm text-white hover:bg-red-700 hover:text-white transition-all duration-300 rounded-b-lg cursor-pointer"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -680,8 +739,8 @@ export default function Header() {
                     >
                       <div className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center shadow border border-gray-500 overflow-hidden">
                         <Image
-                          src="/images/logo2.png"
-                          alt="soap logo2"
+                          src="/images/logo.png"
+                          alt="soap logo"
                           width={32}
                           height={32}
                         />
@@ -802,6 +861,7 @@ export default function Header() {
           )}
         </div>
       </header>
+      </div>
 
       {/* Bottom Navigation Footer */}
       <div className={`

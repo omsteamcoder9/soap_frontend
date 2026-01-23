@@ -559,7 +559,8 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
   }
 
   const tax = (cart.totalPrice || 0) * 0.05;
-  const shippingFee = (cart.totalPrice || 0) > 500 ? 0 : 50;
+ // Line 263: Change to
+const shippingFee = 0; // Free shipping
   const total = (cart.totalPrice || 0) + tax + shippingFee;
 
   // Check if at least one payment method is available

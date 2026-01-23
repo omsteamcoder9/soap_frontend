@@ -170,7 +170,7 @@ const ProductStructuredData = ({ product, selectedVariant }: { product: Product,
   
   // Use selected variant price or base price
   const displayPrice = selectedVariant ? selectedVariant.price : (product?.basePrice || 0);
-  // Use selected variant images or main images
+  // Use selected variant images or
   const displayImage = selectedVariant && selectedVariant.images && selectedVariant.images.length > 0 && selectedVariant.images[0]?.image 
     ? `${process.env.NEXT_PUBLIC_BASE_URL || ''}${selectedVariant.images[0].image}`
     : product?.images && product.images.length > 0 && product.images[0]?.image 
@@ -275,7 +275,9 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
   const [lastScrollY, setLastScrollY] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [currentImages, setCurrentImages] = useState(product?.images || []);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // ✅ ADDED: Track selected image
   const { addToCart } = useCart();
+  const router = useRouter();
 
   // Set default variant on component mount
   useEffect(() => {
@@ -303,6 +305,7 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
     console.log('🖼️ First image path:', variant.images?.[0]?.image);
     
     setSelectedVariant(variant);
+    setSelectedImageIndex(0); // ✅ Reset to first image when variant changes
     
     // Update images based on selected variant
     if (variant.images && variant.images.length > 0) {
@@ -313,6 +316,11 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
       // Fallback to main product images if variant has no images
       setCurrentImages(product?.images || []);
     }
+  };
+
+  // ✅ ADDED: Handle image thumbnail click
+  const handleImageThumbnailClick = (index: number) => {
+    setSelectedImageIndex(index);
   };
 
   // Handle scroll to show/hide floating button
@@ -351,6 +359,24 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
     } catch (error) {
       console.error('❌ Mobile - Error adding to cart:', error);
       throw error;
+    }
+  };
+
+  // ✅ ADDED: Handle Buy Now click for desktop
+  const handleBuyNow = async () => {
+    if (!product) {
+      alert('Product not found');
+      return;
+    }
+    
+    try {
+      // Add product to cart first with selected variant
+      await addToCart(product, 1, selectedVariant || undefined);
+      // Then redirect to checkout
+      router.push('/checkout');
+    } catch (error) {
+      console.error('❌ Error in Buy Now:', error);
+      alert('Failed to add product to cart. Please try again.');
     }
   };
 
@@ -411,32 +437,128 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
               {/* Product Images - FULL HEIGHT */}
               <div className="w-full">
                 <div className="relative w-full overflow-hidden rounded-lg mt-5">
-                  <div className="relative w-full h-auto min-h-[400px] lg:min-h-[500px]">
-                    {currentImages && currentImages.length > 0 && currentImages[0]?.image ? (
-                      <>
-                        <Image
-                          src={`${process.env.NEXT_PUBLIC_BASE_URL || ''}${currentImages[0].image}`}
-                          alt={`${product.name}${selectedVariant ? ` - ${selectedVariant.variantName}` : ''} - Premium Organic Soap | ${process.env.NEXT_PUBLIC_SITE_NAME || ''}`}
-                          fill
-                          className="object-contain" 
-                          priority
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          onError={(e) => {
-                            console.error('Image failed to load:', e);
-                            // You can set a fallback image here
-                          }}
-                        />
-                        {/* Image indicator */}
-                        <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                          {selectedVariant ? `${selectedVariant.variantName} Image` : 'Main Image'}
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <span className="text-gray-400 text-sm">No image</span>
-                      </div>
-                    )}
+                  {/* ✅ MAIN IMAGE - UPDATED to use selectedImageIndex */}
+                    <div className="relative w-full h-auto min-h-[400px] lg:min-h-[500px] mb-3">
+  {currentImages && currentImages.length > selectedImageIndex && currentImages[selectedImageIndex]?.image ? (
+    <>
+      {/* Left Arrow for Main Image */}
+      {currentImages.length > 1 && (
+        <button
+          onClick={() => handleImageThumbnailClick(Math.max(0, selectedImageIndex - 1))}
+          disabled={selectedImageIndex === 0}
+          className="absolute top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-lg border border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          style={{ top: '50%',left:"10%" }}
+          aria-label="Previous image"
+        >
+          <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
+
+      <Image
+        src={`${process.env.NEXT_PUBLIC_BASE_URL || ''}${currentImages[selectedImageIndex].image}`}
+        alt={`${product.name}${selectedVariant ? ` - ${selectedVariant.variantName}` : ''} - Premium Organic Soap | ${process.env.NEXT_PUBLIC_SITE_NAME || ''}`}
+        fill
+        className="object-contain" 
+        priority
+        sizes="(max-width: 768px) 100vw, 50vw"
+        onError={(e) => {
+          console.error('Image failed to load:', e);
+          // You can set a fallback image here
+        }}
+      />
+      
+       {/* Right Arrow for Main Image */}
+      {currentImages.length > 1 && (
+        <button
+          onClick={() => handleImageThumbnailClick(Math.min(currentImages.length - 1, selectedImageIndex + 1))}
+          disabled={selectedImageIndex === currentImages.length - 1}
+          className="absolute right-2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-lg border border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+style={{ top: '50%',right:"10%" }}
+        >
+          <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
+
+ 
+    </>
+  ) : (
+    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+      <span className="text-gray-400 text-sm">No image</span>
+    </div>
+  )}
+</div>
+
+          {/* ✅ ADDED: IMAGE THUMBNAIL GALLERY BELOW MAIN IMAGE */}
+{currentImages && currentImages.length > 1 && (
+  <div className="mt-4">
+    <div className="flex justify-center items-center gap-2">
+
+
+      {/* Show 5 thumbnails at a time */}
+      <div className="flex items-center gap-2">
+        {(() => {
+          // Calculate which 5 thumbnails to show based on selected image
+          let startIndex = selectedImageIndex - 2;
+          if (startIndex < 0) startIndex = 0;
+          if (startIndex > currentImages.length - 5) startIndex = Math.max(0, currentImages.length - 5);
+          
+          // Take 5 thumbnails
+          const visibleThumbnails = currentImages.slice(startIndex, startIndex + 5);
+          
+          return visibleThumbnails.map((img, localIndex) => {
+            const actualIndex = startIndex + localIndex;
+            
+            return (
+              <button
+                key={actualIndex}
+                onClick={() => handleImageThumbnailClick(actualIndex)}
+                className={`
+                  flex-shrink-0 w-16 h-16 md:w-20 md:h-20 relative rounded-md overflow-hidden border-2 transition-all
+                  ${selectedImageIndex === actualIndex 
+                    ? 'border-gray-900 ring-2 ring-gray-300 scale-105' 
+                    : 'border-gray-200 hover:border-gray-400'
+                  }
+                `}
+              >
+                {img.image ? (
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_BASE_URL || ''}${img.image}`}
+                    alt={`${product.name} - View ${actualIndex + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400 text-xs">Image {actualIndex + 1}</span>
                   </div>
+                )}
+                
+                {/* Selected indicator */}
+                {selectedImageIndex === actualIndex && (
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
+                      <svg className="w-3 h-3 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+                
+             
+              </button>
+            );
+          });
+        })()}
+      </div>
+
+    </div>
+  </div>
+)}
                 </div>
               </div>
 
@@ -446,7 +568,7 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
                 <h1 className="text-lg sm:text-xl font-bold text-gray-900">
                   {product.name}
                   {selectedVariant && (
-                    <span className="text-base font-normal text-gray-600 ml-2">
+                    <span className="text-base font-normal text-gray-600 ml2">
                       - {selectedVariant.variantName}
                     </span>
                   )}
@@ -509,8 +631,8 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
 )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${currentStock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {currentStock > 0 ? `In Stock (${currentStock})` : 'Out of Stock'}
+                    <span className={`px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      Tax included. Shipping calculated at checkout.
                     </span>
                   </div>
                 </div>
@@ -522,49 +644,75 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
                   </div>
                 )}
 
-                {/* Add to Cart - COMPACT */}
-                <div className="pt-2">
-                  <div className="max-w-sm">
-                    {/* Desktop Add to Cart Button */}
-                    <div className="hidden lg:block">
-                      {/* Pass selected variant to AddToCartButton */}
-                      <AddToCartButton 
-                        product={product} 
-                        selectedVariant={selectedVariant || undefined}
-                      />
-                    </div>
-                    
-                    {/* Mobile Add to Cart Button */}
-                    <div className="lg:hidden">
-                      <div className="space-y-2">
-                        {/* Pass selected variant to AddToCartButton */}
-                        <AddToCartButton 
-                          product={product} 
-                          selectedVariant={selectedVariant || undefined}
-                        />
-                        
-                        {/* Mobile Buy Now Button */}
-                        <button
-                          onClick={() => window.location.href = '/checkout'}
-                          disabled={currentStock <= 0}
-                          className={`
-                            w-full py-3 rounded-lg font-semibold text-sm
-                            transition-colors duration-200 flex items-center justify-center gap-1.5
-                            ${currentStock <= 0 
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                              : 'bg-gray-900 text-white hover:bg-gray-800'
-                            }
-                          `}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                          </svg>
-                          Buy Now
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Add to Cart - COMPACT */}
+<div className="pt-2">
+  <div className="max-w-sm">
+    {/* Desktop Add to Cart Button - MODIFIED: Two buttons side by side */}
+{/* Desktop Add to Cart Button - Two buttons side by side */}
+<div className="hidden lg:block">
+  <div className="flex gap-3">
+    {/* Add to Cart Button */}
+    <div className="flex-1">
+      <AddToCartButton 
+        product={product} 
+        selectedVariant={selectedVariant || undefined}
+      />
+    </div>
+    
+    {/* Buy Now Button - Exact same size as AddToCart */}
+    <div className="flex-1">
+      <button
+        onClick={handleBuyNow}
+        disabled={currentStock <= 0}
+        className={`
+          w-full py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 mt-10
+          transition-all duration-300 shadow cursor-pointer text-sm
+          ${currentStock <= 0 
+            ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+            : 'bg-gray-900 text-white hover:bg-gray-800 hover:shadow-md'
+          }
+        `}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+        Buy Now
+      </button>
+    </div>
+  </div>
+</div>
+    
+    {/* Mobile Add to Cart Button - Kept as before */}
+    <div className="lg:hidden">
+      <div className="space-y-2">
+        {/* Pass selected variant to AddToCartButton */}
+        <AddToCartButton 
+          product={product} 
+          selectedVariant={selectedVariant || undefined}
+        />
+        
+        {/* Mobile Buy Now Button */}
+        <button
+          onClick={handleBuyNow}
+          disabled={currentStock <= 0}
+          className={`
+            w-full py-3 rounded-lg font-semibold text-sm
+            transition-colors duration-200 flex items-center justify-center gap-1.5
+            ${currentStock <= 0 
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+              : 'bg-gray-900 text-white hover:bg-gray-800'
+            }
+          `}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          Buy Now
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
                 {/* Product Details - COMPACT */}
                 <div className="space-y-3 pt-2">
@@ -658,8 +806,8 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
 
           {/* Related Products - TIGHT */}
           {randomProducts && randomProducts.length > 0 && (
-            <div className="p-8 sm:p-8 mt-1 border-t border-gray-300">
-              <h2 className="text-base font-bold text-gray-800 mb-2">Related Organic Soaps</h2>
+            <div className="p-8 sm:p-8 mt-1 border-t border-gray-300 ">
+              <h2 className="text-base font-bold text-gray-800 mb-2 text-center">You may also like</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {randomProducts.slice(0, 4).map((relatedProduct) => (
                   <div key={relatedProduct._id} className="scale-95">

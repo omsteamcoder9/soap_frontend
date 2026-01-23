@@ -33,56 +33,56 @@ export default function ReturnsPage() {
 
   // Use dynamic returns policy settings from backend with fallback values
   const returnsPolicy = {
-    title: settings?.returnsPolicyTitle || 'Returns & Refunds Policy',
-    description: settings?.returnsPolicyDescription || 'We want you to be completely satisfied with your purchase. Here\'s everything you need to know about returns and refunds.',
+    title: settings?.returnsPolicyTitle || 'No Returns & No Refunds Policy',
+    description: settings?.returnsPolicyDescription || 'We do not allow returns or refunds for any purchases made through our website. All sales are final and non-refundable. If the order is damaged or wrong product sent then we will process you with a refund.',
     
     returnSteps: settings?.returnProcessSteps || [
       {
-        title: 'Initiate Return',
-        description: 'Contact our customer service within 30 days of delivery to request a return authorization.',
+        title: 'No Returns',
+        description: 'We do not accept returns for any purchases made through our website.',
       },
       {
-        title: 'Package Item',
-        description: 'Package the item securely in its original packaging with all accessories and documentation.',
+        title: 'No Refunds',
+        description: 'All sales are final and non-refundable.',
       },
       {
-        title: 'Ship Return',
-        description: 'Ship the item back to us using a trackable shipping method. Return shipping is customer\'s responsibility.',
+        title: 'Damaged Items Only',
+        description: 'Only if the order is damaged or wrong product sent then we will process you with a refund.',
       },
       {
-        title: 'Receive Refund',
-        description: 'Once we receive and inspect the item, we\'ll process your refund within 5-10 business days.',
+        title: 'Contact Immediately',
+        description: 'If you receive a damaged or wrong product, contact us immediately for a refund.',
       }
     ],
     
-    timeframe: settings?.returnTimeframe || '30 days from the delivery date',
+    timeframe: settings?.returnTimeframe || '7 days for damage/wrong item claims',
     
     conditions: settings?.returnConditions || [
-      'Items must be unworn, unused, and unwashed',
-      'Original packaging must be intact',
-      'All tags and labels must be attached',
-      'Accessories and documentation must be included'
+      'Damaged items only',
+      'Wrong products only',
+      'Contact within 7 days',
+      'Provide photo evidence'
     ],
     
-    shippingResponsibility: settings?.customerShippingResponsibility || 'Return shipping costs are the responsibility of the customer, unless the return is due to our error (wrong item shipped, defective item, etc.).',
+    shippingResponsibility: settings?.customerShippingResponsibility || 'For approved damaged/wrong item cases only, we cover return shipping.',
     
     nonReturnableItems: settings?.nonReturnableItems || [
-      'Personalized or customized items',
-      'Downloadable software products',
-      'Gift cards',
-      'Intimate apparel (for hygiene reasons)',
-      'Items damaged due to misuse or improper care',
-      'Final sale items (clearly marked as such)'
+      'All purchases (no returns)',
+      'No refunds for change of mind',
+      'No refunds for wrong size',
+      'No refunds for wrong color',
+      'No refunds for any other reason',
+      'All sales are final'
     ],
     
-    defectiveItemsNote: settings?.defectiveItemsNote || 'If you receive a defective or damaged item, please contact us immediately. We will arrange for a replacement or refund, and cover all return shipping costs.',
+    defectiveItemsNote: settings?.defectiveItemsNote || 'We do not allow returns or refunds for any purchases made through our website. All sales are final and non-refundable. If the order is damaged or wrong product sent then we will process you with a refund.',
     
     refundProcessingTime: settings?.refundProcessingTime || '5-10 business days',
-    refundNote: settings?.refundNote || 'It may take additional time for the refund to appear on your credit card statement, depending on your bank\'s processing time.',
-    refundAmountFormula: settings?.refundAmountFormula || 'Refund Amount = Item Price - Shipping Costs',
-    refundAmountDescription: settings?.refundAmountDescription || 'You will receive a full refund for the item price, minus any shipping costs. Original shipping fees are non-refundable.',
+    refundNote: settings?.refundNote || 'Refunds only for damaged or wrong items. All other sales are final and non-refundable.',
+    refundAmountFormula: settings?.refundAmountFormula || 'Refund = Full purchase price',
+    refundAmountDescription: settings?.refundAmountDescription || 'For damaged or wrong items only: full refund including shipping.',
     
-    exchangePolicy: settings?.exchangePolicy || 'We currently do not offer direct exchanges. To exchange an item, please return the original item for a refund and place a new order for the desired item.'
+    exchangePolicy: settings?.exchangePolicy || 'We do not allow returns or refunds for any purchases. All sales are final. No exchanges.'
   };
 
   if (loading) {
@@ -91,7 +91,7 @@ export default function ReturnsPage() {
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading returns policy...</p>
+            <p className="text-gray-600">Loading policy...</p>
           </div>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default function ReturnsPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <div className="w-2 h-8 bg-gray-700 mr-3 rounded-full"></div>
-              Our Return Process
+              Our Strict Policy
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -131,20 +131,19 @@ export default function ReturnsPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <div className="w-2 h-8 bg-gray-700 mr-3 rounded-full"></div>
-              Return Conditions
+              Only These Exceptions
             </h2>
             
             <div className="space-y-6">
               <div className="bg-gray-50 p-6 rounded-xl">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Timeframe</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Timeframe for Claims</h3>
                 <p className="text-gray-700">
-                  You have <strong className="text-gray-800">{returnsPolicy.timeframe}</strong> to initiate a return. 
-                  Items must be in new, unused condition with all original packaging and tags.
+                  Only <strong className="text-gray-800">{returnsPolicy.timeframe}</strong>. No returns or refunds for any other purchases.
                 </p>
               </div>
 
               <div className="bg-gray-50 p-6 rounded-xl">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Condition Requirements</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">What We Accept</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {returnsPolicy.conditions.map((requirement, index) => (
                     <div 
@@ -170,12 +169,12 @@ export default function ReturnsPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <div className="w-2 h-8 bg-gray-700 mr-3 rounded-full"></div>
-              Non-Returnable Items
+              No Returns For Any Purchases
             </h2>
             
             <div className="bg-gray-50 p-6 rounded-xl">
               <p className="text-gray-700 mb-6">
-                The following items cannot be returned unless they are defective or we made an error:
+                We do not allow returns or refunds for any purchases made through our website:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {returnsPolicy.nonReturnableItems.map((item, index) => (
@@ -194,7 +193,7 @@ export default function ReturnsPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <div className="w-2 h-8 bg-gray-700 mr-3 rounded-full"></div>
-              Defective or Damaged Items
+              Damaged or Wrong Product
             </h2>
             
             <div className="bg-gray-50 p-6 rounded-xl">
@@ -211,16 +210,14 @@ export default function ReturnsPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
               <div className="w-2 h-8 bg-gray-700 mr-3 rounded-full"></div>
-              Refund Information
+              Refund Information (Damaged/Wrong Only)
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-gray-50 p-6 rounded-xl">
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Processing Time</h3>
                 <p className="text-gray-700 mb-3">
-                  Once we receive your return, our team will inspect the item. If approved, refunds will be 
-                  processed within <strong className="text-gray-800">{returnsPolicy.refundProcessingTime}</strong>. The refund will be issued to your original 
-                  payment method.
+                  If approved for damaged/wrong item: <strong className="text-gray-800">{returnsPolicy.refundProcessingTime}</strong>.
                 </p>
                 <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-gray-700">
                   <p className="text-sm text-gray-700">
@@ -258,12 +255,11 @@ export default function ReturnsPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
               <div className="w-2 h-8 bg-gray-700 mr-3 rounded-full"></div>
-              Need to Initiate a Return?
+              Damaged or Wrong Product?
             </h2>
             <div className="bg-gray-50 p-6 rounded-xl">
               <p className="text-gray-700 mb-6">
-                To start a return, please contact our customer service team with your order number 
-                and the reason for return. We&apos;ll guide you through the process.
+                We do not allow returns or refunds for any purchases. All sales are final. If the order is damaged or wrong product sent then contact us immediately.
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -283,14 +279,9 @@ export default function ReturnsPage() {
                     href="/contact"
                     className="bg-gray-700 text-white px-4 py-3 rounded-md hover:bg-gray-800 transition-all duration-200 font-medium shadow hover:shadow-lg text-center text-sm"
                   >
-                    Contact Us Now
+                    Report Damaged/Wrong Item
                   </Link>
-                  <Link
-                    href="/faq"
-                    className="bg-white text-gray-700 border border-gray-300 px-4 py-3 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium shadow text-center text-sm"
-                  >
-                    Read Our FAQ
-                  </Link>
+              
                 </div>
               </div>
             </div>

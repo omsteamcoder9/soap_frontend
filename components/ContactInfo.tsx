@@ -1,4 +1,38 @@
+
+'use client';
+import { useEffect, useState } from 'react';
+import { settingsAPI } from '@/lib/settings-api';
+
 export default function ContactInfo() {
+  const [contactInfo, setContactInfo] = useState({
+    contactNumber: '+91 7200074221',
+    whatsappNumber: '+91 7200074221',
+    callNumber: '+91 7200074221',
+    contactEmail: 'support@soap.com',
+    companyAddress: '123 soap Street'
+  });
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        setLoading(true);
+        const data = await settingsAPI.getContactInfo();
+        setContactInfo(data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch contact info:', err);
+        setError('Failed to load contact information. Using default values.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContactInfo();
+  }, []);
+
   const contactMethods = [
     {
       icon: (
@@ -7,7 +41,7 @@ export default function ContactInfo() {
         </svg>
       ),
       title: 'Email',
-      details: 'support@soap.com',
+      details: contactInfo.contactEmail,
       description: 'Send us an email anytime'
     },
     {
@@ -17,7 +51,7 @@ export default function ContactInfo() {
         </svg>
       ),
       title: 'Phone',
-      details: '+91 7200074221',
+      details: contactInfo.contactNumber,
       description: 'Mon-Fri from 9am to 6pm'
     },
     {
@@ -27,18 +61,16 @@ export default function ContactInfo() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       ),
-      title: 'Office',
-      details: '123 soap Street',
-      description: 'Reading Corner, soapville 10001'
+      title: 'Address',
+      details: contactInfo.companyAddress,
+    
     }
   ];
 
   return (
     <div className="bg-[#f2f2f2] rounded-lg p-8 border border-gray-300">
       <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
-      <p className="text-gray-700 mb-8">
-        We&apos;re here to help and answer any questions you might have about our soaps, orders, or services. We look forward to hearing from you.
-      </p>
+      
       
       <div className="space-y-6">
         {contactMethods.map((method, index) => (
@@ -76,7 +108,7 @@ export default function ContactInfo() {
         </div>
       </div>
 
-      <div className="mt-8 pt-8 border-t border-gray-300">
+      {/* <div className="mt-8 pt-8 border-t border-gray-300">
         <h4 className="font-semibold text-gray-900 mb-4">Visit Our Store</h4>
         <p className="text-gray-700 mb-2">
           Come browse our physical collection at our flagship store in soapville.
@@ -84,7 +116,7 @@ export default function ContactInfo() {
         <p className="text-sm text-gray-600">
           Free parking available • Wheelchair accessible • soap reading events every Saturday
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }

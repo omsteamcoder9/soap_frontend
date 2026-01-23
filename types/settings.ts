@@ -16,6 +16,8 @@ export interface PublicSettings {
   razorpayKeyId: string;
   cashOnDeliveryEnabled: boolean;
   contactNumber: string;
+  whatsappNumber: string;
+  callNumber: string;
   contactEmail: string;
   companyAddress: string;
   siteName: string;
@@ -29,6 +31,7 @@ export interface PublicSettings {
   facebookUrl: string;
   twitterUrl: string;
   instagramUrl: string;
+  youtubeUrl: string; // ADDED
   linkedinUrl: string;
   maintenanceMode: boolean;
   metaKeywords: string[];
@@ -79,7 +82,7 @@ export interface PublicSettings {
   dataProtectionRightsList: string[];
   securityMeasuresSection: string;
   
-  // Terms of Service Settings - NEW
+  // Terms of Service Settings
   termsOfServiceTitle: string;
   termsOfServiceLastUpdated: string;
   termsImportantNotice: string;
@@ -114,6 +117,8 @@ export interface SettingsFormData {
   razorpayKeyId: string;
   cashOnDeliveryEnabled: boolean;
   contactNumber: string;
+  whatsappNumber: string;
+  callNumber: string;
   contactEmail: string;
   companyAddress: string;
   siteName: string;
@@ -127,6 +132,7 @@ export interface SettingsFormData {
   facebookUrl: string;
   twitterUrl: string;
   instagramUrl: string;
+  youtubeUrl: string; // ADDED
   linkedinUrl: string;
   maintenanceMode: boolean;
   metaKeywords: string[];
@@ -177,7 +183,7 @@ export interface SettingsFormData {
   dataProtectionRightsList: string[];
   securityMeasuresSection: string;
   
-  // Terms of Service Settings - NEW
+  // Terms of Service Settings
   termsOfServiceTitle: string;
   termsOfServiceLastUpdated: string;
   termsImportantNotice: string;
