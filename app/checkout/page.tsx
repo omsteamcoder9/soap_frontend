@@ -82,7 +82,7 @@ interface FormData {
 // Add interface for public settings
 interface PublicSettings {
   razorpayEnabled: boolean;
-  razorpayKeyId: string;
+  razorpayKeyId: string; // ← This is already in your interface
   cashOnDeliveryEnabled: boolean;
   contactNumber: string;
   contactEmail: string;
@@ -122,9 +122,15 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [paymentSettings, setPaymentSettings] = useState<{razorpayEnabled: boolean; cashOnDeliveryEnabled: boolean}>({
+  // CHANGED: Add razorpayKeyId to state
+  const [paymentSettings, setPaymentSettings] = useState<{
+    razorpayEnabled: boolean; 
+    cashOnDeliveryEnabled: boolean;
+    razorpayKeyId?: string; // ← ADDED
+  }>({
     razorpayEnabled: false,
-    cashOnDeliveryEnabled: true
+    cashOnDeliveryEnabled: true,
+    razorpayKeyId: '' // ← ADDED
   });
   const [settingsLoading, setSettingsLoading] = useState(true);
 
@@ -159,18 +165,20 @@ export default function CheckoutPage() {
 const fetchPaymentSettings = async () => {
   try {
     setSettingsLoading(true);
-    // Add this line to get the backend URL
-    const API_URL = process.env.NEXT_PUBLIC_API_URL ;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
     
-    // Update this line to use the environment variable
-const response = await fetch(`${API_URL}/settings/public`);    const data = await response.json();
+    const response = await fetch(`${API_URL}/settings/public`);
+    const data = await response.json();
     
     if (data.success) {
       const settings: PublicSettings = data.data;
+      // CHANGED: Store razorpayKeyId from database settings
       setPaymentSettings({
         razorpayEnabled: settings.razorpayEnabled,
-        cashOnDeliveryEnabled: settings.cashOnDeliveryEnabled
+        cashOnDeliveryEnabled: settings.cashOnDeliveryEnabled,
+        razorpayKeyId: settings.razorpayKeyId // ← ADDED: Get from database
       });
+
     }
   } catch (error) {
     console.error('Error fetching payment settings:', error);
@@ -217,6 +225,13 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
       // Check if Razorpay is enabled
       if (!paymentSettings.razorpayEnabled) {
         alert('Razorpay payment is currently disabled. Please use Cash on Delivery.');
+        setPaymentLoading(false);
+        return;
+      }
+
+      // CHANGED: Also check if we have a valid Razorpay key
+      if (!paymentSettings.razorpayKeyId) {
+        alert('Razorpay key is not configured. Please contact support.');
         setPaymentLoading(false);
         return;
       }
@@ -282,7 +297,6 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
             paymentMethod: 'razorpay' as const
           };
 
-          console.log('Creating user order with data:', orderData);
           const orderResult = await createUserOrder(orderData, token);
           orderId = orderResult.orderId;
           finalAmount = orderResult.finalAmount;
@@ -304,21 +318,20 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
             paymentMethod: 'razorpay' as const
           };
 
-          console.log('Creating guest order with data:', orderData);
           const orderResult = await createGuestOrder(orderData);
           orderId = orderResult.orderId;
           finalAmount = orderResult.finalAmount;
         }
 
-        console.log('Database order created with ID:', orderId, 'Final amount:', finalAmount);
+      
 
         // STEP 2: Create Razorpay order using the database orderId
-        console.log('Creating Razorpay order with orderId:', orderId);
+      
         const razorpayOrder = await createRazorpayOrder(orderId);
 
         // Validate Razorpay order response
         if (!razorpayOrder || !razorpayOrder.id || !razorpayOrder.amount) {
-          console.error('Invalid Razorpay order:', razorpayOrder);
+          
           throw new Error('Invalid Razorpay order response - missing required fields');
         }
 
@@ -326,7 +339,8 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
 
         // STEP 3: Open Razorpay checkout
         const options: RazorpayOptions = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          // CHANGED: Use razorpayKeyId from database settings instead of environment variable
+          key: paymentSettings.razorpayKeyId, // ← CHANGED HERE
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency || 'INR',
           name: 'soap',
@@ -531,7 +545,7 @@ const response = await fetch(`${API_URL}/settings/public`);    const data = awai
       }
       
     } catch (error: unknown) {
-      console.error('COD order error:', error);
+     
       
       const errorMessage = error instanceof Error ? error.message : 'Order creation failed. Please try again.';
       

@@ -29,7 +29,7 @@ interface SearchProduct {
 }
 
 export default function Header() {
-  const { user } = useAuth();
+const { user, logout } = useAuth();
   const { cart } = useCart();
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -157,12 +157,12 @@ export default function Header() {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  const handleLogout = () => {
-   
-    setShowDropdown(false);
-    setIsMobileMenuOpen(false);
-    router.push('/');
-  };
+ const handleLogout = () => {
+  logout(); // ✅ Call the logout function from AuthContext
+  setShowDropdown(false);
+  setIsMobileMenuOpen(false);
+  router.push('/');
+};
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

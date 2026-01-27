@@ -15,7 +15,7 @@ interface AuthContextType {
   token: string | null;
   login: (credentials: { email: string; password: string }) => Promise<void>;
   register: (userData: { name: string; email: string; password: string }) => Promise<void>;
-  logo2ut: () => void;
+  logout: () => void;
   loading: boolean;
 }
 
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error: unknown) {
       // Clear any existing auth data on login failure
-      logo2ut();
+      logout();
       
       // Re-throw with proper typing
       if (error instanceof Error) {
@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logo2ut = () => {
+  const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('currentUser');
@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     token,
     login,
     register,
-    logo2ut,
+    logout,
     loading,
   };
 

@@ -276,7 +276,7 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [currentImages, setCurrentImages] = useState(product?.images || []);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0); // ✅ ADDED: Track selected image
-  const { addToCart } = useCart();
+  const { addToCart,cart } = useCart();
   const router = useRouter();
 
   // Set default variant on component mount
@@ -363,22 +363,41 @@ export default function ClientProductDetail({ product, randomProducts }: ClientP
   };
 
   // ✅ ADDED: Handle Buy Now click for desktop
-  const handleBuyNow = async () => {
-    if (!product) {
-      alert('Product not found');
-      return;
+// ✅ MODIFIED: Handle Buy Now click for desktop
+const handleBuyNow = async () => {
+  if (!product) {
+    alert('Product not found');
+    return;
+  }
+  
+  try {
+    // ✅ FIRST: Check if product is already in cart
+    const existingCartItem = cart.items.find(item => {
+      // Check if same product
+      if (item.product._id !== product._id) return false;
+      
+      // Check if same variant (if variant exists)
+      if (selectedVariant) {
+        // Compare variant IDs or variant names
+        return item.selectedVariant?.variantName === selectedVariant.variantName;
+      } else {
+        // No variant selected
+        return !item.selectedVariant;
+      }
+    });
+    
+    // ✅ If product is NOT already in cart, add it first
+    if (!existingCartItem) {
+      await addToCart(product, 1, selectedVariant || undefined);
     }
     
-    try {
-      // Add product to cart first with selected variant
-      await addToCart(product, 1, selectedVariant || undefined);
-      // Then redirect to checkout
-      router.push('/checkout');
-    } catch (error) {
-      console.error('❌ Error in Buy Now:', error);
-      alert('Failed to add product to cart. Please try again.');
-    }
-  };
+    // ✅ Then redirect to checkout (whether added now or already existed)
+    router.push('/checkout');
+  } catch (error) {
+    console.error('❌ Error in Buy Now:', error);
+    alert('Failed to process Buy Now. Please try again.');
+  }
+};
 
   // Use selected variant stock or product stock
   const currentStock = selectedVariant ? selectedVariant.stock : (product?.stock || 0);
