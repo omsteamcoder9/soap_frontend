@@ -5,14 +5,20 @@ import { useCart } from '@/context/CartContext';
 import { Product,ProductVariant } from '@/types/product';
 import { ShoppingBag, Check } from 'lucide-react';
 
+
 interface AddToCartButtonProps {
   product: Product;
   selectedVariant?: ProductVariant;
+  quantity?: number;                     // ← ADD THIS
+  onQuantityChange?: (qty: number) => void;
 }
 
 // Line 14 - Update props destructuring
-export default function AddToCartButton({ product, selectedVariant }: AddToCartButtonProps) {
-  const [quantity, setQuantity] = useState(1);
+export default function AddToCartButton({ product, selectedVariant ,quantity: externalQuantity,           // ← ADD THIS
+  onQuantityChange  }: AddToCartButtonProps) {
+ const [internalQuantity, setInternalQuantity] = useState(1);
+const quantity = externalQuantity !== undefined ? externalQuantity : internalQuantity;
+const setQuantity = onQuantityChange || setInternalQuantity;
   const { addToCart, loading, addingProductId, cart } = useCart();
 
   const isAdding = loading && addingProductId === product._id;
@@ -60,7 +66,7 @@ export default function AddToCartButton({ product, selectedVariant }: AddToCartB
   return (
     <div className="space-y-3">
       {/* Quantity Selector - Only show if product is in stock */}
-      {!isOutOfStock && (
+      
         <div className="flex items-center gap-2">
           <span className="font-semibold text-sm">Qty:</span>
           <div className="flex items-center border border-gray-300 rounded">
@@ -88,7 +94,7 @@ export default function AddToCartButton({ product, selectedVariant }: AddToCartB
             </span>
           )}
         </div>
-      )}
+    
 
       {/* Add to Cart Button - FIXED: Prevent shifting on click */}
       <button

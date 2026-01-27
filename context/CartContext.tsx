@@ -169,7 +169,8 @@ const handleGuestAddToCart = (product: Product, quantity: number, selectedVarian
   
   // Recalculate totals
   guestCart.totalItems = guestCart.items.reduce((sum, item) => sum + item.quantity, 0);
-  guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0); // ✅ Use item.price
+  guestCart.totalPrice = guestCart.items.reduce((sum, item) => 
+  sum + (item.price * item.quantity), 0); // ✅ CORRECT: Using item.price// ✅ Use item.price
   guestCart.updatedAt = new Date().toISOString();
   
   // Save to localStorage
@@ -194,7 +195,8 @@ const handleGuestAddToCart = (product: Product, quantity: number, selectedVarian
       }
       
       guestCart.totalItems = guestCart.items.reduce((sum, item) => sum + item.quantity, 0);
-guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.product.basePrice * item.quantity), 0);      guestCart.updatedAt = new Date().toISOString();
+guestCart.totalPrice = guestCart.items.reduce((sum, item) => 
+  sum + (item.price * item.quantity), 0); // ✅ CORRECT: Using item.price      guestCart.updatedAt = new Date().toISOString();
       
       saveGuestCart(guestCart);
     }
@@ -210,7 +212,8 @@ guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.product
     guestCart.items = guestCart.items.filter(item => item._id !== itemId);
     
     guestCart.totalItems = guestCart.items.reduce((sum, item) => sum + item.quantity, 0);
-guestCart.totalPrice = guestCart.items.reduce((sum, item) => sum + (item.product.basePrice * item.quantity), 0);    guestCart.updatedAt = new Date().toISOString();
+guestCart.totalPrice = guestCart.items.reduce((sum, item) => 
+  sum + (item.price * item.quantity), 0); // ✅ CORRECT: Using item.price   guestCart.updatedAt = new Date().toISOString();
     
     saveGuestCart(guestCart);
     
