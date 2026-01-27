@@ -75,97 +75,118 @@ export default function CartPage() {
               </div>
 
               <div className="space-y-4 sm:space-y-6">
-                {cart.items.map((item) => (
-                  <div key={item._id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border-b border-gray-200 pb-4 sm:pb-6">
-                    {/* Product Image and Info - Mobile Layout */}
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <Image
-                        src={`${process.env.NEXT_PUBLIC_BASE_URL}${item.product.images[0].image}`}
-                        alt={item.product.name}
-                        width={80}
-                        height={80}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
+                {cart.items.map((item) => {
+                  // Get the first image or use a fallback
+                  const firstImage = item.product?.images?.[0]?.image;
+                  const hasImage = firstImage && firstImage.trim() !== '';
+                  const imageUrl = hasImage 
+                    ? `${process.env.NEXT_PUBLIC_BASE_URL}${firstImage}`
+                    : null;
+                  
+                  return (
+                    <div key={item._id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border-b border-gray-200 pb-4 sm:pb-6">
+                      {/* Product Image and Info - Mobile Layout */}
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        {imageUrl ? (
+                          <Image
+                            src={imageUrl}
+                            alt={item.product?.name || 'Product image'}
+                            width={80}
+                            height={80}
+                            className="w-16 h-16 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                        
+                        {/* Product Info - Mobile Layout */}
+                        <div className="sm:hidden flex-grow">
+                          <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">
+                            {item.product?.name || 'Unnamed Product'}
+                          </h3>
+                          {/* ✅ SHOW SELECTED PACK/VARIANT */}
+                          {item.selectedVariant && (
+                            <p className="text-blue-600 text-xs font-medium">📦 Pack: {item.selectedVariant.variantName}</p>
+                          )}
+                          {/* ✅ USE VARIANT PRICE IF EXISTS */}
+                          <p className="text-gray-600 text-xs">₹{item.price || 0}</p>
+                          {item.product?.stock && item.product.stock < 10 && (
+                            <p className="text-orange-600 text-xs mt-1">
+                              Only {item.product.stock} left
+                            </p>
+                          )}
+                        </div>
+                      </div>
                       
-                      {/* Product Info - Mobile Layout */}
-                      <div className="sm:hidden flex-grow">
-                        <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{item.product.name}</h3>
+                      {/* Product Info - Desktop Layout */}
+                      <div className="hidden sm:block flex-grow">
+                        <h3 className="font-semibold text-gray-900">
+                          {item.product?.name || 'Unnamed Product'}
+                        </h3>
                         {/* ✅ SHOW SELECTED PACK/VARIANT */}
                         {item.selectedVariant && (
-                          <p className="text-blue-600 text-xs font-medium">📦 Pack: {item.selectedVariant.variantName}</p>
+                          <p className="text-blue-600 text-sm font-medium">📦 Pack: {item.selectedVariant.variantName}</p>
                         )}
                         {/* ✅ USE VARIANT PRICE IF EXISTS */}
-                        <p className="text-gray-600 text-xs">₹{item.price}</p>
-                        {item.product.stock < 10 && (
+                        <p className="text-gray-600 text-sm">₹{item.price || 0}</p>
+                        {item.product?.stock && item.product.stock < 10 && (
                           <p className="text-orange-600 text-xs mt-1">
-                            Only {item.product.stock} left
+                            Only {item.product.stock} left in stock
                           </p>
                         )}
                       </div>
-                    </div>
-                    
-                    {/* Product Info - Desktop Layout */}
-                    <div className="hidden sm:block flex-grow">
-                      <h3 className="font-semibold text-gray-900">{item.product.name}</h3>
-                      {/* ✅ SHOW SELECTED PACK/VARIANT */}
-                      {item.selectedVariant && (
-                        <p className="text-blue-600 text-sm font-medium">📦 Pack: {item.selectedVariant.variantName}</p>
-                      )}
-                      {/* ✅ USE VARIANT PRICE IF EXISTS */}
-                      <p className="text-gray-600 text-sm">₹{item.price}</p>
-                      {item.product.stock < 10 && (
-                        <p className="text-orange-600 text-xs mt-1">
-                          Only {item.product.stock} left in stock
-                        </p>
-                      )}
-                    </div>
-                    
-                    {/* Quantity Controls and Price - Mobile Layout */}
-                    <div className="flex items-center justify-between sm:justify-center sm:space-x-2">
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          onClick={() => updateCartItem(item._id, item.quantity - 1)}
-                          disabled={item.quantity <= 1}
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 hover:border-gray-500 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-all duration-200 cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="w-8 sm:w-12 text-center text-sm sm:text-base">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateCartItem(item._id, item.quantity + 1)}
-                          disabled={item.quantity >= item.product.stock}
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 hover:border-gray-500 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-all duration-200 cursor-pointer"
-                        >
-                          +
-                        </button>
+                      
+                      {/* Quantity Controls and Price - Mobile Layout */}
+                      <div className="flex items-center justify-between sm:justify-center sm:space-x-2">
+                        <div className="flex items-center space-x-2">
+                          <button 
+                            onClick={() => updateCartItem(item._id, item.quantity - 1)}
+                            disabled={item.quantity <= 1}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 hover:border-gray-500 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-all duration-200 cursor-pointer"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 sm:w-12 text-center text-sm sm:text-base">{item.quantity}</span>
+                          <button 
+                            onClick={() => updateCartItem(item._id, item.quantity + 1)}
+                            disabled={item.quantity >= (item.product?.stock || 0)}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 hover:border-gray-500 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-all duration-200 cursor-pointer"
+                          >
+                            +
+                          </button>
+                        </div>
+                        
+                        {/* Price and Remove - Mobile Layout */}
+                        <div className="sm:hidden text-right">
+                          {/* ✅ CALCULATE WITH VARIANT PRICE */}
+                          <p className="font-semibold text-gray-900 text-sm">₹{((item.price || 0) * item.quantity).toFixed(2)}</p>
+                          <button 
+                            onClick={() => removeFromCart(item._id)}
+                            className="text-red-600 hover:text-red-800 text-xs transition-colors duration-200 cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </div>
                       
-                      {/* Price and Remove - Mobile Layout */}
-                      <div className="sm:hidden text-right">
+                      {/* Price and Remove - Desktop Layout */}
+                      <div className="hidden sm:block text-right min-w-[100px]">
                         {/* ✅ CALCULATE WITH VARIANT PRICE */}
-                        <p className="font-semibold text-gray-900 text-sm">₹{(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-semibold text-gray-900">₹{((item.price || 0) * item.quantity).toFixed(2)}</p>
                         <button 
                           onClick={() => removeFromCart(item._id)}
-                          className="text-red-600 hover:text-red-800 text-xs transition-colors duration-200 cursor-pointer"
+                          className="text-red-600 hover:text-red-800 text-sm transition-colors duration-200 cursor-pointer"
                         >
                           Remove
                         </button>
                       </div>
                     </div>
-                    
-                    {/* Price and Remove - Desktop Layout */}
-                    <div className="hidden sm:block text-right min-w-[100px]">
-                      {/* ✅ CALCULATE WITH VARIANT PRICE */}
-                      <p className="font-semibold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
-                      <button 
-                        onClick={() => removeFromCart(item._id)}
-                        className="text-red-600 hover:text-red-800 text-sm transition-colors duration-200 cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
