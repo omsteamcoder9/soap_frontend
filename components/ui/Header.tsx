@@ -285,7 +285,7 @@ const { user, logout } = useAuth();
                 <div className="">
                   <Image
                     src="/images/fea.png"
-                    alt="soapa logo"
+                    alt="soap logo"
                     width={48}
                     height={48}
                     priority
