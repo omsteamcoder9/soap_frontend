@@ -26,7 +26,7 @@ export const settingsAPI = {
       // Get token from localStorage or your auth context
       const token = localStorage.getItem('token') || '';
       
-      const response = await fetch(`${API_URL}/settings`, {
+      const response = await fetch(`${API_URL}/admin/settings`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -51,7 +51,7 @@ export const settingsAPI = {
       // Get token from localStorage or your auth context
       const token = localStorage.getItem('token') || '';
       
-      const response = await fetch(`${API_URL}/settings`, {
+      const response = await fetch(`${API_URL}/admin/settings`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -78,7 +78,7 @@ export const settingsAPI = {
       // Get token from localStorage or your auth context
       const token = localStorage.getItem('token') || '';
       
-      const response = await fetch(`${API_URL}/settings/validate-razorpay`, {
+      const response = await fetch(`${API_URL}/admin/settings/validate-razorpay`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -109,7 +109,7 @@ export const settingsAPI = {
     facebookUrl: string;
     twitterUrl: string;
     instagramUrl: string;
-    youtubeUrl: string; // ADDED
+    youtubeUrl: string;
     linkedinUrl: string;
   }> => {
     try {
@@ -131,7 +131,7 @@ export const settingsAPI = {
           facebookUrl: settings.facebookUrl || '',
           twitterUrl: settings.twitterUrl || '',
           instagramUrl: settings.instagramUrl || '',
-          youtubeUrl: settings.youtubeUrl || '', // ADDED
+          youtubeUrl: settings.youtubeUrl || '',
           linkedinUrl: settings.linkedinUrl || ''
         };
       }
@@ -148,7 +148,7 @@ export const settingsAPI = {
         facebookUrl: '',
         twitterUrl: '',
         instagramUrl: '',
-        youtubeUrl: '', // ADDED
+        youtubeUrl: '',
         linkedinUrl: ''
       };
     }

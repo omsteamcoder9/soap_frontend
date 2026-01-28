@@ -31,7 +31,7 @@ export interface PublicSettings {
   facebookUrl: string;
   twitterUrl: string;
   instagramUrl: string;
-  youtubeUrl: string; // ADDED
+  youtubeUrl: string;
   linkedinUrl: string;
   maintenanceMode: boolean;
   metaKeywords: string[];
@@ -95,7 +95,7 @@ export interface PublicSettings {
 }
 
 export interface AdminSettings extends PublicSettings {
-  razorpayKeySecret: string;
+  razorpayKeySecret: string; // ADDED: This field is only available in admin settings
   updatedBy?: string;
   updatedAt?: Date;
 }
@@ -115,6 +115,7 @@ export interface RazorpayValidationResponse {
 export interface SettingsFormData {
   razorpayEnabled: boolean;
   razorpayKeyId: string;
+  razorpayKeySecret: string; // ADDED: For form submission
   cashOnDeliveryEnabled: boolean;
   contactNumber: string;
   whatsappNumber: string;
@@ -132,7 +133,7 @@ export interface SettingsFormData {
   facebookUrl: string;
   twitterUrl: string;
   instagramUrl: string;
-  youtubeUrl: string; // ADDED
+  youtubeUrl: string;
   linkedinUrl: string;
   maintenanceMode: boolean;
   metaKeywords: string[];
@@ -196,6 +197,7 @@ export interface SettingsFormData {
 }
 
 export interface SettingsState extends PublicSettings {
+  razorpayKeySecret: string; // ADDED: For component state
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -260,4 +262,12 @@ export interface TermsOfServiceSettings {
   termsLimitationLiability: string;
   termsChangesNotice: string;
   termsContactInfo: string;
+}
+
+// Payment settings interface
+export interface PaymentSettings {
+  razorpayEnabled: boolean;
+  razorpayKeyId: string;
+  razorpayKeySecret: string; // ADDED
+  cashOnDeliveryEnabled: boolean;
 }
