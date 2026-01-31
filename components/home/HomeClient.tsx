@@ -308,7 +308,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
         </div>
       </section>
 
- {/* Skin-vestment Section - Updated with dynamic contact number and better typography */}
+{/* Skin-vestment Section - Updated with dynamic contact number and better typography */}
 <section className="bg-[#f6f5f2] py-27" aria-label="Our Skin-Vestment Philosophy">
   <div className="max-w-7xl mx-auto px-5">
     <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-24">
@@ -333,17 +333,14 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
           Say Hello to Glow
         </h2>
 
-        <p className="text-[#444] text-[22px] leading-[1.8] max-w-xl mx-auto md:mx-0 mb-6">
+        <p className="text-[#444] text-[22px] leading-[1.8] max-w-xl mx-auto md:mx-0 mb-3">
           Your skin deserves more than a quick fix—it&apos;s a skinvestment
           in lasting beauty. Nourish, protect, and glow with confidence
           every day.
         </p>
-
-        {/* Single line heading - FIXED FOR MOBILE */}
-<h3 className="font-serif text-[36px] xl:text-[56px] xl:text-[80px] leading-tight text-[#2c2c2c] mb-4 whitespace-nowrap overflow-x-auto">
+<h3 className="font-serif text-[26px] sm:text-[32px] md:text-[36px] lg:text-[40px] xl:text-[44px] leading-tight text-[#2c2c2c] mb-4 whitespace-nowrap mr-3 sm:mr-0">
   For a better you, today & always
 </h3>
-
         {/* Customization content */}
         <div className="space-y-8 max-w-xl">
           <div className="space-y-4">
@@ -406,7 +403,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
               { 
                 icon: Clock, 
                 color: 'gray',
-                title: 'Easy Returns', 
+                title: 'No Returns', 
                 desc: ' We do not allow returns or refunds for any purchases made through our website. All sales are final and non-refundable.If the order is damaged or wrong product sent then we will process you with a refund',
                 highlight: '30-day policy'
               },

@@ -538,8 +538,8 @@
                   className={`
                     flex-shrink-0 w-16 h-16 md:w-20 md:h-20 relative rounded-md overflow-hidden border-2 transition-all
                     ${selectedImageIndex === actualIndex 
-                      ? 'border-gray-900 ring-2 ring-gray-300 scale-105' 
-                      : 'border-gray-200 hover:border-gray-400'
+                      ? '' 
+                      : ''
                     }
                   `}
                 >
@@ -797,29 +797,6 @@
                       </p>
                     </div>
 
-                    {/* Additional Product Info */}
-                    <div className="space-y-2 pt-2 border-t border-gray-300">
-                      {product.category && (
-                        <div className="flex text-sm">
-                          <span className="font-medium text-gray-800 w-2/5">Category:</span>
-                          <span className="text-gray-900 w-3/5">{typeof product.category === 'object' ? product.category.name : 'Organic Soap'}</span>
-                        </div>
-                      )}
-                      
-                      {product.seller && (
-                        <div className="flex text-sm">
-                          <span className="font-medium text-gray-800 w-2/5">Seller:</span>
-                          <span className="text-gray-900 w-3/5">{product.seller}</span>
-                        </div>
-                      )}
-                      
-                      {selectedVariant?.sku && (
-                        <div className="flex text-sm">
-                          <span className="font-medium text-gray-800 w-2/5">SKU:</span>
-                          <span className="text-gray-900 w-3/5">{selectedVariant.sku}</span>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -827,7 +804,7 @@
 
             {/* Related Products - TIGHT */}
             {randomProducts && randomProducts.length > 0 && (
-              <div className="p-8 sm:p-8 mt-1 border-t border-gray-300 ">
+              <div className="p-8 sm:p-8 mt-4 border-t border-gray-300 ">
                 <h2 className="text-base font-bold text-gray-800 mb-2 text-center">You may also like</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {randomProducts.slice(0, 4).map((relatedProduct) => (
