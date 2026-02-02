@@ -41,7 +41,7 @@ const { user, logout } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [siteName, setSiteName] = useState('GLAINIC SOAP');
+  const [siteName, setSiteName] = useState('GLAINIC');
   
   // Scroll behavior for footer
   const [isFooterVisible, setIsFooterVisible] = useState(false);

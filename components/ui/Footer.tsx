@@ -203,7 +203,7 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="border-t border-gray-600 mt-10 pt-6 text-center">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-300">
-            <p>© {new Date().getFullYear()}{settings.siteName}.All rights reserved.</p>
+            <p>© {new Date().getFullYear()} {settings.siteName}.All rights reserved.</p>
           </div>
         </div>
       </div>
