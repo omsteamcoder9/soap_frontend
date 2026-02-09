@@ -14,7 +14,8 @@ interface ProductGridProps {
   search?: string;
   limit?: number;
   hideFilters?: boolean;
-  hasOffer?: 'true' | 'false' | ''; // ✅ ADDED: New prop for offer filtering
+  hasOffer?: 'true' | 'false' | '';
+  onTotalCountChange?: (count: number) => void; // ✅ ADDED
 }
 
 // Define the filter state interface
@@ -24,7 +25,7 @@ interface FilterState {
   sortBy: string;
   sortOrder: 'asc' | 'desc';
   search: string;
-  hasOffer: 'true' | 'false' | ''; // ✅ ADDED
+  hasOffer: 'true' | 'false' | '';
 }
 
 // Define the query parameters interface
@@ -33,7 +34,7 @@ interface QueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: string;
-  hasOffer?: string; // ✅ ADDED
+  hasOffer?: string;
 }
 
 export default function ProductGrid({ 
@@ -41,7 +42,8 @@ export default function ProductGrid({
   search, 
   limit, 
   hideFilters = false,
-  hasOffer = '' // ✅ ADDED: Default empty (no filtering)
+  hasOffer = '',
+  onTotalCountChange // ✅ ADDED
 }: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -52,59 +54,17 @@ export default function ProductGrid({
   const filterBarRef = useRef<HTMLDivElement>(null);
   const mobileFiltersRef = useRef<HTMLDivElement>(null);
   
-  // Determine if this is the home page (hideFilters is true and limit is not specified)
   const isHomePage = hideFilters && limit === undefined;
   
-  // Filter state with proper typing
   const [filters, setFilters] = useState<FilterState>({
     category: category || '',
     priceRange: '',
     sortBy: 'createdAt',
     sortOrder: 'desc',
     search: search || '',
-    hasOffer: hasOffer // ✅ ADDED: Initialize from prop
+    hasOffer: hasOffer
   });
 
-  // Sticky filter bar effect - only if filters are visible
-  useEffect(() => {
-    if (hideFilters) return;
-
-    const handleScroll = () => {
-      if (filterBarRef.current) {
-        const filterBarTop = filterBarRef.current.getBoundingClientRect().top;
-        setIsSticky(filterBarTop <= 0);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hideFilters]);
-
-  // Close mobile filters when clicking outside - only if filters are visible
-  useEffect(() => {
-    if (hideFilters) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (mobileFiltersRef.current && !mobileFiltersRef.current.contains(event.target as Node)) {
-        setIsMobileFiltersOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [hideFilters]);
-
-  // ✅ Update filters when hasOffer prop changes
-  useEffect(() => {
-    if (hasOffer !== undefined) {
-      setFilters(prev => ({
-        ...prev,
-        hasOffer: hasOffer
-      }));
-    }
-  }, [hasOffer]);
-
-  // Wrap loadFilteredProducts in useCallback to memoize it
   const loadFilteredProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -117,10 +77,8 @@ export default function ProductGrid({
       
       const hasPriceFilter = filters.priceRange;
       
-      // Use properly typed query parameters
       const queryParams: QueryParams = {};
       
-      // Only add category to query if it's not empty
       if (filters.category) {
         queryParams.category = filters.category;
         console.log('🎯 Filtering by category:', filters.category);
@@ -132,7 +90,6 @@ export default function ProductGrid({
       if (filters.sortBy) queryParams.sortBy = filters.sortBy;
       if (filters.sortOrder) queryParams.sortOrder = filters.sortOrder;
       
-      // ✅ CRITICAL: Add hasOffer filter if specified
       if (filters.hasOffer) {
         queryParams.hasOffer = filters.hasOffer;
         console.log('🎯 Filtering by hasOffer:', filters.hasOffer);
@@ -146,12 +103,12 @@ export default function ProductGrid({
       productsData = response.data;
       
       console.log('📦 API Response count:', productsData?.length);
-      // Check if offer filtering is working
-      if (productsData?.length > 0) {
-        console.log('📊 Sample product hasOffer:', productsData[0]?.hasOffer);
+      
+      // ✅ CALLBACK: Send total count to parent component
+      if (onTotalCountChange && productsData) {
+        onTotalCountChange(productsData.length);
       }
 
-      // Apply price filtering on frontend
       if (hasPriceFilter && productsData) {
         console.log('💰 Applying price filter on frontend:', filters.priceRange);
         const filtered = productsData.filter(product => {
@@ -177,7 +134,6 @@ export default function ProductGrid({
         productsData = filtered;
       }
 
-      // APPLY LIMIT - Always 8 for home page, otherwise use limit prop
       const finalLimit = isHomePage ? 8 : limit;
       if (finalLimit && productsData) {
         console.log(`🎯 Applying limit: ${finalLimit} products`);
@@ -192,7 +148,7 @@ export default function ProductGrid({
     } finally {
       setLoading(false);
     }
-  }, [filters, limit, isHomePage]); // Add dependencies for useCallback
+  }, [filters, limit, isHomePage, onTotalCountChange]);  // Add dependencies for useCallback
 
   useEffect(() => {
     async function loadData() {

@@ -9,6 +9,7 @@ import ProductGrid from '@/components/products/ProductGrid';
 import Image from "next/image";
 import { settingsAPI } from '@/lib/settings-api'; // ADDED IMPORT
 
+
 interface HomeClientProps {
   categories: Category[];
   featuredCategories: Category[];
@@ -65,6 +66,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [contactNumber, setContactNumber] = useState('7200074221'); // ADDED STATE
+  const [offerProductCount, setOfferProductCount] = useState(0);
 
   // Fetch contact info on component mount
   useEffect(() => {
@@ -286,50 +288,83 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
     </div>
 
     <div className="space-y-8 text-center">
-      {featuredCategories.map((category, index) => (
-        <div 
-          key={category._id} 
-          className="animate-fade-in-up" 
-          style={{ 
-            animationDelay: `${index * 300}ms`,
-            animationFillMode: 'both'
-          }}
-        >
-          {/* Category Title */}
-          <div className="mb-4">
-            <h3 className="text-2xl font-bold text-gray-900">{category.name}</h3>
-          </div>
+      {featuredCategories.map((category, index) => {
+        // ✅ ADD STATE FOR PRODUCT COUNT
+        const [categoryProductCount, setCategoryProductCount] = useState(0);
+        
+        return (
+          <div 
+            key={category._id} 
+            className="animate-fade-in-up" 
+            style={{ 
+              animationDelay: `${index * 300}ms`,
+              animationFillMode: 'both'
+            }}
+          >
+            {/* Category Title */}
+            <div className="relative flex items-center justify-center mb-4">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-700 to-gray-800 bg-clip-text text-transparent text-center">
+                {category.name}
+              </h3>
+              
+              {/* ✅ CONDITIONAL: Show View All button ONLY if more than 8 products */}
+              {categoryProductCount > 8 && (
+                <button 
+                  onClick={() => router.push(`/products?category=${category.slug}`)}
+                  className="absolute right-0 inline-flex items-center gap-0.5 sm:gap-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:from-gray-800 hover:to-gray-900 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
+                >
+                  View All
+                  <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                </button>
+              )}
+            </div>
 
-          {/* ✅ ONLY NON-OFFER PRODUCTS */}
-          <ProductGrid 
-            category={category._id} 
-            hasOffer="false"  // ✅ ONLY products WITHOUT offers
-            limit={8} 
-            hideFilters={true}
-          />
-        </div>
-      ))}
+            {/* ✅ ProductGrid with callback */}
+            <ProductGrid 
+              category={category._id} 
+              hasOffer="false"
+              limit={8}
+              hideFilters={true}
+              onTotalCountChange={setCategoryProductCount} // ✅ Pass callback
+            />
+          </div>
+        );
+      })}
     </div>
   </div>
 </section>
-{/* Special Offers Section */}
-<section className="py-8 " aria-label="Special Offers">
-  <div className="container mx-auto px-1">
-    <div className="text-center mb-8">
-      <div className="flex items-center justify-center gap-3 mb-2">
 
+{/* Special Offers Section - UPDATED with conditional button */}
+<section className="py-8" aria-label="Special Offers">
+  <div className="container mx-auto px-1">
+    <div className="relative mb-8">
+      <div className="text-center">
+        <h2 className="text-4xl font-bold text-gray-900 mb-3">Offers</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+          Grab these exclusive deals before they're gone!
+        </p>
       </div>
-      <h2 className="text-4xl font-bold text-gray-900 mb-3">Offers</h2>
-      <p className="text-gray-600 max-w-2xl mx-auto">
-        Grab these exclusive deals before they're gone!
-      </p>
+      
+      {/* ✅ CONDITIONAL: Show View All Offers button ONLY if more than 8 offer products */}
+      {offerProductCount > 8 && (
+        <div className="absolute right-0 top-0">
+          <button 
+            onClick={() => router.push(`/products?hasOffer=true`)}
+            className="inline-flex items-center gap-0.5 sm:gap-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:from-gray-800 hover:to-gray-900 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
+          >
+            View All Offers
+            <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+          </button>
+        </div>
+      )}
     </div>
 
-    {/* ✅ ONLY OFFER PRODUCTS */}
+    {/* ✅ ProductGrid for offers with callback */}
     <ProductGrid 
-      hasOffer="true"  // ✅ ONLY products with offers
-      limit={8} 
+      hasOffer="true"
+      limit={8}
       hideFilters={true}
+      onTotalCountChange={setOfferProductCount} // ✅ Pass callback
     />
   </div>
 </section>
