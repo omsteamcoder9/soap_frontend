@@ -274,39 +274,67 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
         </div>
       </section>
 
-      {/* Explore Soaps Section */}
-      <section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
-        <div className="container mx-auto px-1">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">Explore soaps</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Explore our carefully curated soaps
-            </p>
+
+{/* Explore Soaps Section - UPDATED */}
+<section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
+  <div className="container mx-auto px-1">
+    <div className="text-center mb-8">
+      <h2 className="text-4xl font-bold text-gray-900 mb-3 ">Explore soaps</h2>
+      <p className="text-gray-600 max-w-2xl mx-auto">
+        Explore our carefully curated soaps
+      </p>
+    </div>
+
+    <div className="space-y-8 text-center">
+      {featuredCategories.map((category, index) => (
+        <div 
+          key={category._id} 
+          className="animate-fade-in-up" 
+          style={{ 
+            animationDelay: `${index * 300}ms`,
+            animationFillMode: 'both'
+          }}
+        >
+          {/* Category Title */}
+          <div className="mb-4">
+            <h3 className="text-2xl font-bold text-gray-900">{category.name}</h3>
           </div>
 
-          <div className="space-y-8">
-            {featuredCategories.map((category, index) => (
-              <div 
-                key={category._id} 
-                className="animate-fade-in-up" 
-                style={{ 
-                  animationDelay: `${index * 300}ms`,
-                  animationFillMode: 'both'
-                }}
-              >
-          
-
-                {/* CHANGED: limit from 18 to 12 */}
-                <ProductGrid 
-                  category={category._id} 
-                  limit={8} 
-                  hideFilters={true}
-                />
-              </div>
-            ))}
-          </div>
+          {/* ✅ ONLY NON-OFFER PRODUCTS */}
+          <ProductGrid 
+            category={category._id} 
+            hasOffer="false"  // ✅ ONLY products WITHOUT offers
+            limit={8} 
+            hideFilters={true}
+          />
         </div>
-      </section>
+      ))}
+    </div>
+  </div>
+</section>
+{/* Special Offers Section */}
+<section className="py-8 " aria-label="Special Offers">
+  <div className="container mx-auto px-1">
+    <div className="text-center mb-8">
+      <div className="flex items-center justify-center gap-3 mb-2">
+
+      </div>
+      <h2 className="text-4xl font-bold text-gray-900 mb-3">Offers</h2>
+      <p className="text-gray-600 max-w-2xl mx-auto">
+        Grab these exclusive deals before they're gone!
+      </p>
+    </div>
+
+    {/* ✅ ONLY OFFER PRODUCTS */}
+    <ProductGrid 
+      hasOffer="true"  // ✅ ONLY products with offers
+      limit={8} 
+      hideFilters={true}
+    />
+  </div>
+</section>
+
+
 
 {/* Skin-vestment Section - Updated with dynamic contact number and better typography */}
 <section className="bg-[#f6f5f2] py-27" aria-label="Our Skin-Vestment Philosophy">

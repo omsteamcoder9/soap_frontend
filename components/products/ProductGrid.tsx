@@ -14,6 +14,7 @@ interface ProductGridProps {
   search?: string;
   limit?: number;
   hideFilters?: boolean;
+  hasOffer?: 'true' | 'false' | ''; // ✅ ADDED: New prop for offer filtering
 }
 
 // Define the filter state interface
@@ -23,6 +24,7 @@ interface FilterState {
   sortBy: string;
   sortOrder: 'asc' | 'desc';
   search: string;
+  hasOffer: 'true' | 'false' | ''; // ✅ ADDED
 }
 
 // Define the query parameters interface
@@ -31,9 +33,16 @@ interface QueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: string;
+  hasOffer?: string; // ✅ ADDED
 }
 
-export default function ProductGrid({ category, search, limit, hideFilters = false }: ProductGridProps) {
+export default function ProductGrid({ 
+  category, 
+  search, 
+  limit, 
+  hideFilters = false,
+  hasOffer = '' // ✅ ADDED: Default empty (no filtering)
+}: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +61,8 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
     priceRange: '',
     sortBy: 'createdAt',
     sortOrder: 'desc',
-    search: search || ''
+    search: search || '',
+    hasOffer: hasOffer // ✅ ADDED: Initialize from prop
   });
 
   // Sticky filter bar effect - only if filters are visible
@@ -84,6 +94,16 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [hideFilters]);
 
+  // ✅ Update filters when hasOffer prop changes
+  useEffect(() => {
+    if (hasOffer !== undefined) {
+      setFilters(prev => ({
+        ...prev,
+        hasOffer: hasOffer
+      }));
+    }
+  }, [hasOffer]);
+
   // Wrap loadFilteredProducts in useCallback to memoize it
   const loadFilteredProducts = useCallback(async () => {
     try {
@@ -93,6 +113,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
 
       console.log('🔄 Current filters:', filters);
       console.log('📦 Loading products with category:', filters.category);
+      console.log('🎯 Has Offer filter:', filters.hasOffer);
       
       const hasPriceFilter = filters.priceRange;
       
@@ -111,18 +132,29 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
       if (filters.sortBy) queryParams.sortBy = filters.sortBy;
       if (filters.sortOrder) queryParams.sortOrder = filters.sortOrder;
       
+      // ✅ CRITICAL: Add hasOffer filter if specified
+      if (filters.hasOffer) {
+        queryParams.hasOffer = filters.hasOffer;
+        console.log('🎯 Filtering by hasOffer:', filters.hasOffer);
+      } else {
+        console.log('🎯 No hasOffer filter applied');
+      }
+      
       console.log('🚀 Sending to API:', queryParams);
       
       const response = await getAllProducts(queryParams);
       productsData = response.data;
       
       console.log('📦 API Response count:', productsData?.length);
+      // Check if offer filtering is working
+      if (productsData?.length > 0) {
+        console.log('📊 Sample product hasOffer:', productsData[0]?.hasOffer);
+      }
 
       // Apply price filtering on frontend
       if (hasPriceFilter && productsData) {
         console.log('💰 Applying price filter on frontend:', filters.priceRange);
         const filtered = productsData.filter(product => {
-          // ✅ CHANGED: Use product.basePrice instead of product.price
           const price = product.basePrice;
           switch (filters.priceRange) {
             case '100-200':
@@ -145,7 +177,7 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
         productsData = filtered;
       }
 
-      // APPLY LIMIT - Always 12 for home page, otherwise use limit prop
+      // APPLY LIMIT - Always 8 for home page, otherwise use limit prop
       const finalLimit = isHomePage ? 8 : limit;
       if (finalLimit && productsData) {
         console.log(`🎯 Applying limit: ${finalLimit} products`);
@@ -229,7 +261,8 @@ export default function ProductGrid({ category, search, limit, hideFilters = fal
       priceRange: '',
       sortBy: 'createdAt',
       sortOrder: 'desc',
-      search: ''
+      search: '',
+      hasOffer: hasOffer // ✅ Keep the prop value
     });
   };
 

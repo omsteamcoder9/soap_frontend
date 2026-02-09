@@ -176,7 +176,11 @@ export default async function ProductsPage(props: ProductsPageProps) {
          
 
             {/* Product Grid */}
-            <ProductGrid category={selectedCategory} />
+<ProductGrid 
+  category={selectedCategory}
+  hasOffer="false"  // ✅ ADD THIS: Only show non-offer products
+  hideFilters={false}
+/>
             
     
           </div>
