@@ -737,9 +737,9 @@ const { user, logout } = useAuth();
                       className="flex items-center space-x-2 group cursor-pointer"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <div className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center shadow border border-gray-500 overflow-hidden">
+                      <div className="">
                         <Image
-                          src="/images/logo.png"
+                          src="/images/fea.png"
                           alt="soap logo"
                           width={32}
                           height={32}
