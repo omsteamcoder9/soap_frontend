@@ -447,7 +447,7 @@
         {/* ✅ Structured Data - JSON-LD (for SEO) */}
         <ProductStructuredData product={product} selectedVariant={selectedVariant} />
         
-        <div className="min-h-screen bg-[#f2f2f2] pb-16 lg:pb-0">
+        <div className="min-h-screen bg-[#f2f2f2] pb-11 lg:pb-0">
           <div className="mx-auto">
             
             {/* Product Section - ULTRA COMPACT */}
@@ -804,7 +804,7 @@
 
             {/* Related Products - TIGHT */}
             {randomProducts && randomProducts.length > 0 && (
-              <div className="p-8 sm:p-8 mt-4 border-t border-gray-300 ">
+              <div className="p-4 sm:p-8 mt-4 border-t border-gray-300 ">
                 <h2 className="text-base font-bold text-gray-800 mb-2 text-center">You may also like</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {randomProducts.slice(0, 4).map((relatedProduct) => (

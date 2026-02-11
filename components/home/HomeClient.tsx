@@ -252,10 +252,10 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
 
                 {/* Hero Headline */}
                 <h1 className="font-serif text-white leading-[1.1] mb-6">
-                  <span className="block text-6xl md:text-7xl lg:text-8xl font-light tracking-tight">
+                  <span className="block text-6xl md:text-7xl lg:text-8xl font-light tracking-tight ml-10">
                     {slide.titleLine1}
                   </span>
-                  <span className="block text-5xl md:text-6xl lg:text-7xl italic font-extralight text-white/90 ml-4 md:ml-12">
+                  <span className="block text-5xl md:text-6xl lg:text-7xl italic font-extralight text-white/90 ml-4 md:ml-20">
                     {slide.titleLine2}
                   </span>
                 </h1>
@@ -335,7 +335,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
 </section>
 
 {/* Special Offers Section - UPDATED with conditional button */}
-<section className="py-8" aria-label="Special Offers">
+<section className="py-4" aria-label="Special Offers">
   <div className="container mx-auto px-1">
     <div className="relative mb-8">
       <div className="text-center">
@@ -347,7 +347,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
       
       {/* ✅ CONDITIONAL: Show View All Offers button ONLY if more than 8 offer products */}
       {offerProductCount > 8 && (
-        <div className="absolute right-0 top-0">
+        <div className="absolute right-0 top-0 mt-2">
           <button 
             onClick={() => router.push(`/products?hasOffer=true`)}
             className="inline-flex items-center gap-0.5 sm:gap-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:from-gray-800 hover:to-gray-900 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
