@@ -143,17 +143,17 @@ export default function ProductCard({ product }: ProductCardProps) {
       
       <div className="p-3">
         {/* Product Name and Discount Percentage */}
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold text-gray-900 leading-tight line-clamp-2 text-xs flex-1 pr-2">
-            {product.name}
-          </h3>
-          
-          {hasValidOffer && actualDiscountPercentage > 0 && (
-            <div className="bg-red-100 text-red-800 px-2 py-0.5 rounded-md text-xs font-bold whitespace-nowrap">
-              {Math.round(actualDiscountPercentage)}% OFF
-            </div>
-          )}
-        </div>
+<div className="flex justify-between items-start mb-2">
+  <h3 className="font-semibold text-gray-900 truncate text-xs flex-1 pr-2 text-left">
+    {product.name}
+  </h3>
+  
+  {hasValidOffer && actualDiscountPercentage > 0 && (
+    <div className="bg-red-100 text-red-800 px-2 py-0.5 rounded-md text-xs font-bold whitespace-nowrap flex-shrink-0">
+      {Math.round(actualDiscountPercentage)}% OFF
+    </div>
+  )}
+</div>
         
         {/* Price and Stock - FIXED THE STRIKETHROUGH */}
 <div className="flex justify-between items-center mb-3">

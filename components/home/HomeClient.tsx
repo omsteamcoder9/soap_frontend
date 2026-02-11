@@ -290,7 +290,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
     <div className="space-y-8 text-center">
       {featuredCategories.map((category, index) => {
         // ✅ ADD STATE FOR PRODUCT COUNT
-        const [categoryProductCount, setCategoryProductCount] = useState(0);
+        const [categoryProductCount, setCategoryProductCount] = useState('0');
         
         return (
           <div 
@@ -307,16 +307,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                 {category.name}
               </h3>
               
-              {/* ✅ CONDITIONAL: Show View All button ONLY if more than 8 products */}
-              {categoryProductCount > 8 && (
-                <button 
-                  onClick={() => router.push(`/products?category=${category.slug}`)}
-                  className="absolute right-0 inline-flex items-center gap-0.5 sm:gap-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:from-gray-800 hover:to-gray-900 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
-                >
-                  View All
-                  <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                </button>
-              )}
+       
             </div>
 
             {/* ✅ ProductGrid with callback */}
@@ -325,7 +316,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
               hasOffer="false"
               limit={8}
               hideFilters={true}
-              onTotalCountChange={setCategoryProductCount} // ✅ Pass callback
+            
             />
           </div>
         );
