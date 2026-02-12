@@ -118,7 +118,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className={`object-contain transition-all duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}
+              className={`object-contain transition-all duration-300 ${isHovered ? 'scale-110' : ''}`}
               onError={handleImageError}
               priority={false}
               loading="lazy"

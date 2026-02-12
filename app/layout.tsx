@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import { CartProvider } from '@/context/CartContext'
-import Header from '@/components/ui/Header'
+import HeaderWrapper from '@/components/ui/HeaderWrapper' // CHANGE THIS
 import Footer from '@/components/ui/Footer'
 import FloatingContactButtons from '@/components/FloatingContactButtons'
 
@@ -29,12 +29,11 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <div className="min-h-screen flex flex-col">
-              <Header />
+              <HeaderWrapper /> {/* CHANGED FROM Header TO HeaderWrapper */}
               <main className="flex-grow">
                 {children}
               </main>
               <Footer />
-              {/* Add Floating Contact Buttons here */}
               <FloatingContactButtons />
             </div>
           </CartProvider>

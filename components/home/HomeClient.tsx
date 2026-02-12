@@ -277,46 +277,51 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
       </section>
 
 
-{/* Explore Soaps Section - UPDATED */}
+{/* Explore Soaps Section - UPDATED with conditional button */}
 <section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
   <div className="container mx-auto px-1">
-    <div className="text-center mb-8">
-      <h2 className="text-4xl font-bold text-gray-900 mb-3 ">Explore soaps</h2>
-      <p className="text-gray-600 max-w-2xl mx-auto">
-        Explore our carefully curated soaps
-      </p>
+    <div className="relative mb-8">
+      <div className="text-center">
+        <h2 className="text-4xl font-bold text-gray-900 mb-3">Explore soaps</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Explore our carefully curated soaps
+        </p>
+      </div>
     </div>
 
-    <div className="space-y-8 text-center">
+    <div className="space-y-12">
       {featuredCategories.map((category, index) => {
-        // ✅ ADD STATE FOR PRODUCT COUNT
-        const [categoryProductCount, setCategoryProductCount] = useState('0');
+        const [categoryProductCount, setCategoryProductCount] = useState(0);
         
         return (
-          <div 
-            key={category._id} 
-            className="animate-fade-in-up" 
-            style={{ 
-              animationDelay: `${index * 300}ms`,
-              animationFillMode: 'both'
-            }}
-          >
-            {/* Category Title */}
-            <div className="relative flex items-center justify-center mb-4">
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-700 to-gray-800 bg-clip-text text-transparent text-center">
+          <div key={category._id} className="relative">
+            {/* Category header with conditional button */}
+            <div className="relative mb-6">
+              <h3 className="text-2xl font-semibold text-gray-800 text-center">
                 {category.name}
               </h3>
               
-       
+              {/* ✅ CONDITIONAL: Show View All button ONLY if more than 8 products in this category */}
+              {categoryProductCount > 8 && (
+                <div className="absolute right-0 top-0 mt-1">
+                  <button 
+                    onClick={() => router.push(`/products?category=${category._id}`)}
+                    className="inline-flex items-center gap-0.5 sm:gap-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:from-gray-800 hover:to-gray-900 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
+                  >
+                    View All
+                    <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  </button>
+                </div>
+              )}
             </div>
-
-            {/* ✅ ProductGrid with callback */}
+            
+            {/* Product grid for this category */}
             <ProductGrid 
               category={category._id} 
               hasOffer="false"
               limit={8}
               hideFilters={true}
-            
+              onTotalCountChange={setCategoryProductCount}
             />
           </div>
         );
