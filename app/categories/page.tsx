@@ -13,13 +13,13 @@ interface Category {
 
 // ✅ SEO Metadata
 export async function generateMetadata(): Promise<Metadata> {
-  const storeName = process.env.NEXT_PUBLIC_SITE_NAME || 'soap';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soapstore.com';
+  const storeName = process.env.NEXT_PUBLIC_SITE_NAME ;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ;
   
   return {
     title: `Shop by Category | Organic Soap Categories | ${storeName}`,
     description: `Browse all soap categories at ${storeName}. Explore our organic, natural, and specialty soap collections for every skin type and need.`,
-    keywords: ['soap categories', 'organic soap types', 'natural soap collections', 'soap by category', 'skin care categories', storeName],
+    keywords: ['soap categories', 'organic soap types', 'natural soap collections', 'soap by category', 'skin care categories'],
     robots: {
       index: true,
       follow: true,

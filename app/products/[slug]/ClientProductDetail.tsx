@@ -656,12 +656,7 @@
                       </div>
                     </div>
 
-                  {/* Variant Description (if available) */}
-                  {selectedVariant?.description && (
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm text-gray-700">{selectedVariant.description}</p>
-                    </div>
-                  )}
+             
 
                 {/* Add to Cart - COMPACT */}
   <div className="pt-2">
