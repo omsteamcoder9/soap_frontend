@@ -163,7 +163,7 @@ const AboutPage: React.FC = () => {
                 <div className="absolute -inset-4 bg-stone-100 rounded-3xl rotate-3 transition-transform group-hover:rotate-1 duration-500" />
                 <div className="relative h-[450px] md:h-[600px] rounded-2xl overflow-hidden shadow-2xl border border-stone-200/50">
                   <Image
-                    src="/images/m3.avif"
+                    src="/images/ab2.jpg"
                     alt="Cold-processed Natural Soap Making"
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -260,7 +260,7 @@ const AboutPage: React.FC = () => {
 
               <div className="relative h-[500px] rounded-2xl overflow-hidden">
                 <Image
-                  src="/images/m3.avif"
+                  src="/images/ab.jpg"
                   alt="Family using Glainic products"
                   fill
                   className="object-cover"
@@ -348,7 +348,7 @@ const AboutPage: React.FC = () => {
               <div className="relative h-[400px] lg:h-full min-h-[500px] overflow-hidden">
                 <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-stone-800/50 to-transparent z-10" />
                 <Image
-                  src="/images/m3.avif"
+                  src="/images/ab1.jpg"
                   alt="Glainic Natural Soap"
                   fill
                   className="object-cover transition-transform duration-[3000ms] group-hover:scale-110"
