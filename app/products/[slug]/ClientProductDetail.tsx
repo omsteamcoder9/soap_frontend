@@ -451,7 +451,7 @@
           <div className="mx-auto">
             
             {/* Product Section - ULTRA COMPACT */}
-            <div className="bg-white">
+            <div className="bg-white pb-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
                 {/* Product Images - FULL HEIGHT */}
                 <div className="w-full">
@@ -536,7 +536,7 @@
                   key={actualIndex}
                   onClick={() => handleImageThumbnailClick(actualIndex)}
                   className={`
-                    flex-shrink-0 w-16 h-16 md:w-20 md:h-20 relative rounded-md overflow-hidden border-2 transition-all
+                    flex-shrink-0 w-16 h-16 md:w-20 md:h-20 relative rounded-md overflow-hidden border-1 transition-all
                     ${selectedImageIndex === actualIndex 
                       ? '' 
                       : ''
@@ -796,10 +796,12 @@
                 </div>
               </div>
             </div>
-
+<hr />
             {/* Related Products - TIGHT */}
             {randomProducts && randomProducts.length > 0 && (
-              <div className="p-4 sm:p-8 mt-4 border-t border-gray-300 ">
+              
+              <div className="p-4 sm:p-8  bg-white  ">
+
                 <h2 className="text-base font-bold text-gray-800 mb-2 text-center">You may also like</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {randomProducts.slice(0, 4).map((relatedProduct) => (
