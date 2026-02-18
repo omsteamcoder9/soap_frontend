@@ -274,9 +274,13 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
                       priority
                     />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">{siteName}</span>
-                  </div>
+                 <div className="flex flex-col">
+  <span className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
+    {siteName}
+    <sup className="ml-1 text-[0.55em] align-super">™</sup>
+  </span>
+</div>
+
                 </Link>
               </div>
 
