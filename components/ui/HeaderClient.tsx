@@ -8,6 +8,7 @@ import { quickSearchProducts } from '@/lib/productService';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { settingsAPI } from '@/lib/settings-api';
+import { fetchActiveCategories } from '@/lib/categoryService'; // Updated import
 
 interface Category {
   _id: string;
@@ -40,7 +41,7 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchProduct[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [categories] = useState<Category[]>(initialCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [siteName, setSiteName] = useState('GLAINIC');
   
@@ -65,6 +66,28 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // Fetch active categories (only those with products)
+  useEffect(() => {
+    const loadActiveCategories = async () => {
+      try {
+        // Use fetchActiveCategories which should return only categories with products
+        const activeCategories = await fetchActiveCategories();
+        if (activeCategories && activeCategories.length > 0) {
+          setCategories(activeCategories);
+        } else {
+          // Fallback to initial categories if no active categories found
+          setCategories(initialCategories);
+        }
+      } catch (error) {
+        console.error('Error loading active categories:', error);
+        // Fallback to initial categories
+        setCategories(initialCategories);
+      }
+    };
+
+    loadActiveCategories();
+  }, [initialCategories]);
 
   // Fetch site settings including siteName
   useEffect(() => {
@@ -274,13 +297,12 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
                       priority
                     />
                   </div>
-                 <div className="flex flex-col">
-  <span className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
-    {siteName}
-    <sup className="ml-1 text-[0.55em] align-super">™</sup>
-  </span>
-</div>
-
+                  <div className="flex flex-col">
+                    <span className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
+                      {siteName}
+                      <sup className="ml-1 text-[0.55em] align-super">™</sup>
+                    </span>
+                  </div>
                 </Link>
               </div>
 
@@ -293,7 +315,7 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
                   Home
                 </Link>
                 
-                {/* First 2 Categories - NO LOADING CONDITION */}
+                {/* First 2 Categories - Only shown if they exist */}
                 {firstTwoCategories.map((category) => (
                   <Link 
                     key={category._id}
@@ -304,7 +326,7 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
                   </Link>
                 ))}
                 
-                {/* Shop Dropdown - Shows remaining categories */}
+                {/* Shop Dropdown - Shows remaining categories only if they exist */}
                 {remainingCategories.length > 0 && (
                   <div ref={shopDropdownRef} className="relative">
                     <button
@@ -772,7 +794,7 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
                           <span className="text-red-200 font-semibold">Special Offers</span>
                         </Link>
                         
-                        {/* All Categories in Mobile Menu - NO LOADING CONDITION */}
+                        {/* All Categories in Mobile Menu - Only show categories with products */}
                         {categories.map((category) => (
                           <Link
                             key={category._id}
