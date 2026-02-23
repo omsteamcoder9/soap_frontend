@@ -41,7 +41,7 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchProduct[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+const [categories] = useState<Category[]>(initialCategories);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [siteName, setSiteName] = useState('GLAINIC');
   
@@ -67,27 +67,7 @@ export default function HeaderClient({ initialCategories }: HeaderClientProps) {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Fetch active categories (only those with products)
-  useEffect(() => {
-    const loadActiveCategories = async () => {
-      try {
-        // Use fetchActiveCategories which should return only categories with products
-        const activeCategories = await fetchActiveCategories();
-        if (activeCategories && activeCategories.length > 0) {
-          setCategories(activeCategories);
-        } else {
-          // Fallback to initial categories if no active categories found
-          setCategories(initialCategories);
-        }
-      } catch (error) {
-        console.error('Error loading active categories:', error);
-        // Fallback to initial categories
-        setCategories(initialCategories);
-      }
-    };
 
-    loadActiveCategories();
-  }, [initialCategories]);
 
   // Fetch site settings including siteName
   useEffect(() => {

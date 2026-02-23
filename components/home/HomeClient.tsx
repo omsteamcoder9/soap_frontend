@@ -1,4 +1,3 @@
-// components/home/HomeClient.tsx
 'use client';
 
 import { Truck, Shield, Clock, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
@@ -7,8 +6,8 @@ import { useRef, useState, useEffect } from 'react';
 import { Category } from '@/types/category';
 import ProductGrid from '@/components/products/ProductGrid';
 import Image from "next/image";
-import { settingsAPI } from '@/lib/settings-api'; // ADDED IMPORT
-
+import { settingsAPI } from '@/lib/settings-api';
+import { getAllProducts } from '@/lib/productService'; // ADD THIS IMPORT
 
 interface HomeClientProps {
   categories: Category[];
@@ -21,13 +20,11 @@ const heroSlides = [
     id: 1,
     titleLine1: "Hold",
     titleLine2: "the Nature",
-                    
     subtitle: "Glainic Newly Launched Collection",
     tagline: "Pure. Gentle. Naturally Beautiful.",
     description: "The art of cleansing redefined. Experience a ritual of nature, meticulously crafted for your skin's soul.",
     bgImage: "/images/aaa.png",
     overlay: "from-black/80 via-black/40 to-transparent",
-
     ctaLink: "/products",
     accentColor: "emerald"
   },
@@ -40,7 +37,6 @@ const heroSlides = [
     description: "Handcrafted with organic botanicals for your daily cleansing ritual.",
     bgImage: "/images/f2.jpg",
     overlay: "from-blue-900/80 via-blue-800/40 to-transparent",
-  
     ctaLink: "/products?category=organic",
     accentColor: "blue"
   },
@@ -53,7 +49,6 @@ const heroSlides = [
     description: "Indulge in premium ingredients that nourish and rejuvenate your skin.",
     bgImage: "/images/g2.jpg",
     overlay: "from-amber-900/80 via-amber-800/40 to-transparent",
-  
     ctaLink: "/products?category=premium",
     accentColor: "amber"
   }
@@ -65,25 +60,85 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [contactNumber, setContactNumber] = useState('7200074221'); // ADDED STATE
+  const [contactNumber, setContactNumber] = useState('7200074221');
   const [offerProductCount, setOfferProductCount] = useState(0);
+  
+  // NEW STATE for category filtering
+  const [categoriesWithProducts, setCategoriesWithProducts] = useState<string[]>([]);
+  const [categoryProductCounts, setCategoryProductCounts] = useState<Record<string, number>>({});
+  const [checkingProducts, setCheckingProducts] = useState(true);
+  
+  // NEW STATE for offers section
+  const [hasOfferProducts, setHasOfferProducts] = useState(false);
 
   // Fetch contact info on component mount
   useEffect(() => {
     const fetchContactInfo = async () => {
       try {
         const contactInfo = await settingsAPI.getContactInfo();
-        // Use whatsappNumber or contactNumber from settings
         setContactNumber(contactInfo.whatsappNumber || contactInfo.contactNumber || '7200074221');
       } catch (error) {
         console.error('Error fetching contact info:', error);
-        // Keep default number if API fails
         setContactNumber('7200074221');
       }
     };
 
     fetchContactInfo();
   }, []);
+
+  // NEW EFFECT: Check which categories have products
+  useEffect(() => {
+    const checkCategoriesForProducts = async () => {
+      try {
+        setCheckingProducts(true);
+        const categoriesWithProductsList: string[] = [];
+        const counts: Record<string, number> = {};
+        
+        for (const category of featuredCategories) {
+          const response = await getAllProducts({ category: category._id });
+          const productCount = response.data?.length || 0;
+          
+          counts[category._id] = productCount;
+          
+          if (productCount > 0) {
+            categoriesWithProductsList.push(category._id);
+          }
+        }
+        
+        setCategoriesWithProducts(categoriesWithProductsList);
+        setCategoryProductCounts(counts);
+      } catch (error) {
+        console.error('Error checking categories for products:', error);
+      } finally {
+        setCheckingProducts(false);
+      }
+    };
+
+    if (featuredCategories.length > 0) {
+      checkCategoriesForProducts();
+    }
+  }, [featuredCategories]);
+
+  // NEW EFFECT: Check if offer products exist
+useEffect(() => {
+  const checkOfferProducts = async () => {
+    try {
+      // Fix: Fetch all products and filter for offers client-side
+      const response = await getAllProducts({});
+      const offerProducts = response.data?.filter(product => product.hasOffer === true) || [];
+      const offerCount = offerProducts.length;
+      
+      setHasOfferProducts(offerCount > 0);
+      setOfferProductCount(offerCount);
+    } catch (error) {
+      console.error('Error checking offer products:', error);
+      setHasOfferProducts(false);
+      setOfferProductCount(0);
+    }
+  };
+
+  checkOfferProducts();
+}, []);
 
   // Auto slide change
   useEffect(() => {
@@ -151,6 +206,11 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
+
+  // Filter categories to only show those with products
+  const visibleCategories = featuredCategories.filter(
+    category => categoriesWithProducts.includes(category._id)
+  );
 
   return (
     <div className="min-h-screen bg-white overflow-hidden">
@@ -259,9 +319,6 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                     {slide.titleLine2}
                   </span>
                 </h1>
-
-                {/* Description Text */}
-                
               </div>
             </div>
           ))}
@@ -276,161 +333,165 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
         </div>
       </section>
 
+      {/* Explore Soaps Section - ONLY SHOW CATEGORIES WITH PRODUCTS */}
+      {!checkingProducts && visibleCategories.length > 0 && (
+        <section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
+          <div className="container mx-auto px-1">
+            <div className="relative mb-8">
+              <div className="text-center">
+                <h2 className="text-4xl font-bold text-gray-900 mb-3">Explore soaps</h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Explore our carefully curated soaps
+                </p>
+              </div>
+            </div>
 
-{/* Explore Soaps Section - UPDATED with conditional button */}
-<section className="py-8 bg-white" aria-label="Explore Our Organic Soaps">
-  <div className="container mx-auto px-1">
-    <div className="relative mb-8">
-      <div className="text-center">
-        <h2 className="text-4xl font-bold text-gray-900 mb-3">Explore soaps</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Explore our carefully curated soaps
-        </p>
-      </div>
-    </div>
+            <div className="space-y-12">
+              {visibleCategories.map((category) => (
+                <div key={category._id} className="relative">
+                  {/* Category header with conditional button */}
+                  <div className="relative mb-6">
+                    <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                      {category.name}
+                    </h3>
+                    
+                    {/* Show View All button ONLY if more than 8 products in this category */}
+                    {categoryProductCounts[category._id] > 8 && (
+                      <div className="absolute right-0 top-0 mt-1">
+                        <button 
+                          onClick={() => router.push(`/products?category=${category._id}`)}
+                          className="inline-flex items-center gap-0.5 sm:gap-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:from-gray-800 hover:to-gray-900 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
+                        >
+                          View All
+                          <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Product grid for this category */}
+                  <ProductGrid 
+                    category={category._id} 
+                    hasOffer="false"
+                    limit={8}
+                    hideFilters={true}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
-    <div className="space-y-12">
-      {featuredCategories.map((category, index) => {
-        const [categoryProductCount, setCategoryProductCount] = useState(0);
-        
-        return (
-          <div key={category._id} className="relative">
-            {/* Category header with conditional button */}
-            <div className="relative mb-6">
-              <h3 className="text-2xl font-semibold text-gray-800 text-center">
-                {category.name}
-              </h3>
+      {/* Show message if no categories have products */}
+      {!checkingProducts && visibleCategories.length === 0 && (
+        <section className="py-8 bg-white">
+          <div className="container mx-auto px-1 text-center">
+            <p className="text-gray-500">No products available at the moment. Please check back later.</p>
+          </div>
+        </section>
+      )}
+
+      {/* Special Offers Section - ONLY SHOW IF HAS OFFER PRODUCTS */}
+      {hasOfferProducts && (
+        <section className="py-4" aria-label="Special Offers">
+          <div className="container mx-auto px-1">
+            <div className="relative mb-8">
+              <div className="text-center">
+                <h2 className="text-4xl font-bold text-gray-900 mb-3">Offers</h2>
+                <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+                  Grab these exclusive deals before they're gone!
+                </p>
+              </div>
               
-              {/* ✅ CONDITIONAL: Show View All button ONLY if more than 8 products in this category */}
-              {categoryProductCount > 8 && (
-                <div className="absolute right-0 top-0 mt-1">
+              {/* Show View All Offers button ONLY if more than 8 offer products */}
+              {offerProductCount > 8 && (
+                <div className="absolute right-0 top-0 mt-2">
                   <button 
-                    onClick={() => router.push(`/products?category=${category._id}`)}
+                    onClick={() => router.push(`/products?hasOffer=true`)}
                     className="inline-flex items-center gap-0.5 sm:gap-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:from-gray-800 hover:to-gray-900 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
                   >
-                    View All
+                    View All Offers
                     <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   </button>
                 </div>
               )}
             </div>
-            
-            {/* Product grid for this category */}
+
             <ProductGrid 
-              category={category._id} 
-              hasOffer="false"
+              hasOffer="true"
               limit={8}
               hideFilters={true}
-              onTotalCountChange={setCategoryProductCount}
+              onTotalCountChange={setOfferProductCount}
             />
           </div>
-        );
-      })}
-    </div>
-  </div>
-</section>
-
-{/* Special Offers Section - UPDATED with conditional button */}
-<section className="py-4" aria-label="Special Offers">
-  <div className="container mx-auto px-1">
-    <div className="relative mb-8">
-      <div className="text-center">
-        <h2 className="text-4xl font-bold text-gray-900 mb-3">Offers</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-          Grab these exclusive deals before they're gone!
-        </p>
-      </div>
-      
-      {/* ✅ CONDITIONAL: Show View All Offers button ONLY if more than 8 offer products */}
-      {offerProductCount > 8 && (
-        <div className="absolute right-0 top-0 mt-2">
-          <button 
-            onClick={() => router.push(`/products?hasOffer=true`)}
-            className="inline-flex items-center gap-0.5 sm:gap-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg font-medium transition-all duration-300 hover:from-gray-800 hover:to-gray-900 hover:shadow-md shadow-sm cursor-pointer text-xs sm:text-sm"
-          >
-            View All Offers
-            <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-          </button>
-        </div>
+        </section>
       )}
-    </div>
 
-    {/* ✅ ProductGrid for offers with callback */}
-    <ProductGrid 
-      hasOffer="true"
-      limit={8}
-      hideFilters={true}
-      onTotalCountChange={setOfferProductCount} // ✅ Pass callback
-    />
-  </div>
-</section>
+      {/* Skin-vestment Section */}
+      <section className="bg-[#f6f5f2] py-27" aria-label="Our Skin-Vestment Philosophy">
+        <div className="max-w-7xl mx-auto px-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-24">
+            {/* LEFT — PAPER WITH MASK */}
+            <div className="flex justify-center md:justify-start">
+              <div className="relative w-[380px] h-[460px]">
+                <Image
+                  src="/images/s1.png"
+                  alt="Our Skin-Vestment - Premium Organic Skincare"
+                  className="object-cover rounded-lg shadow-2xl"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{ objectFit: 'cover' }}
+                  priority
+                />
+              </div>
+            </div>
 
+            {/* RIGHT — COPY */}
+            <div className="text-center md:text-left">
+              <h2 className="font-serif text-[52px] leading-tight text-[#2c2c2c] mb-8">
+                Say Hello to Glow
+              </h2>
 
-
-{/* Skin-vestment Section - Updated with dynamic contact number and better typography */}
-<section className="bg-[#f6f5f2] py-27" aria-label="Our Skin-Vestment Philosophy">
-  <div className="max-w-7xl mx-auto px-5">
-    <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-24">
-      {/* LEFT — PAPER WITH MASK */}
-      <div className="flex justify-center md:justify-start">
-        <div className="relative w-[380px] h-[460px]">
-          <Image
-            src="/images/s1.png"
-            alt="Our Skin-Vestment - Premium Organic Skincare"
-            className="object-cover rounded-lg shadow-2xl"
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            style={{ objectFit: 'cover' }}
-            priority
-          />
-        </div>
-      </div>
-
-      {/* RIGHT — COPY - Updated with better font sizing */}
-      <div className="text-center md:text-left">
-        <h2 className="font-serif text-[52px] leading-tight text-[#2c2c2c] mb-8">
-          Say Hello to Glow
-        </h2>
-
-        <p className="text-[#444] text-[22px] leading-[1.8] max-w-xl mx-auto md:mx-0 mb-3">
-          Your skin deserves more than a quick fix—it&apos;s a skinvestment
-          in lasting beauty. Nourish, protect, and glow with confidence
-          every day.
-        </p>
-<h3 className="font-serif text-[26px] sm:text-[32px] md:text-[36px] lg:text-[40px] xl:text-[44px] leading-tight text-[#2c2c2c] mb-4 whitespace-nowrap mr-3 sm:mr-0">
-  For a better you, today & always
-</h3>
-        {/* Customization content */}
-        <div className="space-y-8 max-w-xl">
-          <div className="space-y-4">
-            <h4 className="text-[28px] font-bold text-gray-800">
-              We Welcome Customisation!
-            </h4>
-            <p className="text-[#444] text-[20px] leading-relaxed">
-              We can make varieties as per your wish! (Ex: Shea Butter soap, Turmeric, Avocado, 
-              as well as Combo products, etc.)
-            </p>
-          </div>
-          
-          <div className="space-y-2">
-            <h4 className="text-[25px] font-bold text-gray-800">
-              To place a custom order:
-            </h4>
-            <p className="text-[#444] text-[20px] leading-relaxed">
-              Call / WhatsApp us at <span className="font-semibold text-gray-900">{contactNumber}</span>
-            </p>
-          </div>
-          
-          <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r">
-            <p className="text-amber-800 font-medium text-[18px]">
-              Note: Minimum order count should be 10 units.
-            </p>
+              <p className="text-[#444] text-[22px] leading-[1.8] max-w-xl mx-auto md:mx-0 mb-3">
+                Your skin deserves more than a quick fix—it&apos;s a skinvestment
+                in lasting beauty. Nourish, protect, and glow with confidence
+                every day.
+              </p>
+              <h3 className="font-serif text-[26px] sm:text-[32px] md:text-[36px] lg:text-[40px] xl:text-[44px] leading-tight text-[#2c2c2c] mb-4 whitespace-nowrap mr-3 sm:mr-0">
+                For a better you, today & always
+              </h3>
+              {/* Customization content */}
+              <div className="space-y-8 max-w-xl">
+                <div className="space-y-4">
+                  <h4 className="text-[28px] font-bold text-gray-800">
+                    We Welcome Customisation!
+                  </h4>
+                  <p className="text-[#444] text-[20px] leading-relaxed">
+                    We can make varieties as per your wish! (Ex: Shea Butter soap, Turmeric, Avocado, 
+                    as well as Combo products, etc.)
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="text-[25px] font-bold text-gray-800">
+                    To place a custom order:
+                  </h4>
+                  <p className="text-[#444] text-[20px] leading-relaxed">
+                    Call / WhatsApp us at <span className="font-semibold text-gray-900">{contactNumber}</span>
+                  </p>
+                </div>
+                
+                <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r">
+                  <p className="text-amber-800 font-medium text-[18px]">
+                    Note: Minimum order count should be 10 units.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* Why Choose Us Section */}
       <section className="py-12 bg-[white] border-t border-gray-200" aria-label="Why Choose Us">
@@ -449,7 +510,6 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                 color: 'gray',
                 title: 'Free Shipping', 
                 desc: 'All domestic orders are delivered for free of charge.',
-                
                 highlight: 'No hidden fees'
               },
               { 
@@ -463,7 +523,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                 icon: Clock, 
                 color: 'gray',
                 title: 'No Returns', 
-                desc: ' We do not allow returns or refunds for any purchases made through our website. All sales are final and non-refundable.If the order is damaged or wrong product sent then we will process you with a refund',
+                desc: 'We do not allow returns or refunds for any purchases made through our website. All sales are final and non-refundable. If the order is damaged or wrong product sent then we will process you with a refund',
                 highlight: '30-day policy'
               },
             ].map((feature, index) => (
@@ -478,10 +538,10 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                   <div className="absolute bottom-4 left-4 w-6 h-6 bg-gray-400 rounded-full opacity-30 animate-float delay-1000"></div>
                 </div>
 
-                <div className={`absolute inset-0 bg-gradient-to-r from-gray-600 to-gray-700 opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-600 to-gray-700 opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
                 
                 <div className="relative z-10">
-                  <div className={`relative w-14 h-14 bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg`}>
+                  <div className="relative w-14 h-14 bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg">
                     <feature.icon className="text-white" size={24} />
                     <div className="absolute inset-0 bg-white/10 rounded-2xl"></div>
                   </div>
@@ -499,7 +559,7 @@ export default function HomeClient({ featuredCategories }: HomeClientProps) {
                   </div>
                 </div>
 
-                <div className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gray-700 group-hover:w-3/4 transition-all duration-500 rounded-full z-10`}></div>
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gray-700 group-hover:w-3/4 transition-all duration-500 rounded-full z-10"></div>
               </div>
             ))}
           </div>
